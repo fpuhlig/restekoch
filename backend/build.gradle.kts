@@ -3,6 +3,7 @@ plugins {
     kotlin("plugin.allopen") version "2.3.10"
     id("io.quarkus")
     id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
+    jacoco
 }
 
 repositories {
@@ -37,6 +38,15 @@ java {
 
 tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 allOpen {
     annotation("jakarta.ws.rs.Path")

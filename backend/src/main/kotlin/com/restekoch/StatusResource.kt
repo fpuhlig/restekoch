@@ -5,9 +5,9 @@ import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 
-@Path("/hello")
-class GreetingResource {
+@Path("/api/status")
+class StatusResource {
     @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    fun hello() = "Hello from Quarkus REST"
+    @Produces(MediaType.APPLICATION_JSON)
+    fun status(): Map<String, String> = mapOf("status" to "ok")
 }

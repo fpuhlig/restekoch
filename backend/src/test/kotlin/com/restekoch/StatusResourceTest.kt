@@ -6,13 +6,13 @@ import org.hamcrest.CoreMatchers.`is`
 import org.junit.jupiter.api.Test
 
 @QuarkusTest
-class GreetingResourceTest {
+class StatusResourceTest {
     @Test
-    fun testHelloEndpoint() {
+    fun returnsOk() {
         given()
-            .`when`().get("/hello")
+            .`when`().get("/api/status")
             .then()
             .statusCode(200)
-            .body(`is`("Hello from Quarkus REST"))
+            .body("status", `is`("ok"))
     }
 }

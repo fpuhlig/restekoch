@@ -1,5 +1,6 @@
-*
-!build/*-runner
-!build/*-runner.jar
-!build/lib/*
-!build/quarkus-app/*
+build/
+.gradle/
+.idea/
+*.iml
+src/main/docker/
+src/native-test/

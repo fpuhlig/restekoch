@@ -1,8 +1,20 @@
-# Java / Kotlin / Gradle
-.gradle/
-build/
-!gradle/wrapper/gradle-wrapper.jar
+# Kotlin / Java
 *.class
+*.log
+*.jar
+*.war
+*.ear
+!gradle/wrapper/gradle-wrapper.jar
+hs_err_pid*
+.kotlin/
+
+# Gradle
+.gradle/
+**/build/
+.gradletasknamecache
+
+# Quarkus
+.quarkus/
 
 # Node
 node_modules/
@@ -22,6 +34,8 @@ dist/
 .idea/
 .vscode/
 *.iml
+*.ipr
+*.iws
 
 # OS
 .DS_Store

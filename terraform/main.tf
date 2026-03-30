@@ -36,3 +36,25 @@ module "vm" {
   subnet      = module.networking.subnet_name
   ssh_pub_key = var.ssh_pub_key
 }
+
+module "memorystore" {
+  source = "./modules/memorystore"
+
+  project_id = var.project_id
+  region     = var.region
+  network_id = module.networking.network_id
+}
+
+module "firestore" {
+  source = "./modules/firestore"
+
+  project_id = var.project_id
+  region     = var.region
+}
+
+module "artifact_registry" {
+  source = "./modules/artifact-registry"
+
+  project_id = var.project_id
+  region     = var.region
+}

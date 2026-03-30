@@ -34,15 +34,18 @@ VPC (restekoch-vpc)
   Subnet (10.0.0.0/24)
     GCE VM (e2-medium, Debian 12, static IP)
       -> Docker containers (backend, frontend, monitoring)
-    Memorystore Redis (coming)
-  Firestore (coming)
-  Artifact Registry (coming)
+    Memorystore Redis 7.2 (1GB, basic tier, private access)
+  Firestore (native mode)
+  Artifact Registry (Docker format)
 ```
 
 ## Modules
 
 - **networking**: VPC, subnet, firewall rules (SSH on 22, HTTP on 80/8080/3000/9090)
 - **vm**: GCE instance with static external IP, SSH access via public key
+- **memorystore**: Redis 7.2 instance connected to the VPC, used for semantic cache and vector search
+- **firestore**: Document database for recipe storage
+- **artifact-registry**: Docker image registry for backend and frontend containers
 
 ## Usage
 
@@ -55,6 +58,14 @@ terraform plan
 terraform apply
 ```
 
+## Outputs
+
+After apply, Terraform prints:
+- `vm_ip`: SSH and HTTP access to the VM
+- `redis_host` + `redis_port`: connection details for the app (internal, not public)
+- `registry_url`: where to push Docker images
+- `network_name`: VPC name
+
 ## Destroy
 
 After each dev session to save credits:
@@ -62,6 +73,8 @@ After each dev session to save credits:
 ```bash
 terraform destroy
 ```
+
+Memorystore costs ~$0.05/hour. Do not leave it running overnight.
 
 ## Multi-Region
 

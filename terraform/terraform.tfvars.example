@@ -1,0 +1,4 @@
+project_id  = "restekoch"
+region      = "europe-west1"
+zone        = "europe-west1-b"
+ssh_pub_key = "ssh-ed25519 AAAA... your-email@example.com"

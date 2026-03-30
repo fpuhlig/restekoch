@@ -44,3 +44,12 @@ jobs:
       - run: cd frontend && pnpm install --frozen-lockfile
       - run: cd frontend && pnpm lint
       - run: cd frontend && pnpm format:check
+
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hashicorp/setup-terraform@v4
+      - run: cd terraform && terraform fmt -check -recursive
+      - run: cd terraform && terraform init -backend=false
+      - run: cd terraform && terraform validate

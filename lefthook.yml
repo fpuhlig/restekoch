@@ -12,6 +12,9 @@ pre-commit:
       glob: "*.{ts,tsx,css}"
       run: pnpm prettier --write {staged_files}
       stage_fixed: true
+    terraform-fmt:
+      glob: "terraform/**/*.tf"
+      run: terraform -chdir=terraform fmt -check
 
 pre-push:
   parallel: true

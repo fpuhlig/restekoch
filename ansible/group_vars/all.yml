@@ -1,6 +1,6 @@
 ghcr_owner: fpuhlig
 
-redis_host: "{{ lookup('env', 'REDIS_HOST') | default('10.0.0.1', true) }}"
+redis_host: "{{ vault_redis_host }}"
 redis_port: 6379
 
 backend_image: "ghcr.io/{{ ghcr_owner }}/restekoch-backend:latest"

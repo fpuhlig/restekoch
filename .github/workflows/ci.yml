@@ -63,6 +63,13 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ansible-lint
+      - name: Create dummy files for linting
+        run: |
+          echo "lintpass" > ansible/.vault-password
+          echo 'vault_redis_host: "dummy"' > ansible/group_vars/vault.yml
+          cd ansible && ANSIBLE_VAULT_PASSWORD_FILE=.vault-password ansible-vault encrypt group_vars/vault.yml --encrypt-vault-id default
+          mkdir -p inventory
+          cp inventory/hosts.yml.example inventory/hosts.yml
       - run: cd ansible && ansible-lint
 
   docker:

@@ -1,7 +1,7 @@
-ghcr_registry: ghcr.io/fpuhlig/restekoch
+ghcr_owner: fpuhlig
 
 redis_host: "{{ lookup('env', 'REDIS_HOST') | default('10.0.0.1', true) }}"
 redis_port: 6379
 
-backend_image: "{{ ghcr_registry }}/backend:latest"
-frontend_image: "{{ ghcr_registry }}/frontend:latest"
+backend_image: "ghcr.io/{{ ghcr_owner }}/restekoch-backend:latest"
+frontend_image: "ghcr.io/{{ ghcr_owner }}/restekoch-frontend:latest"

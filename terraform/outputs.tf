@@ -13,11 +13,6 @@ output "redis_port" {
   description = "Redis port"
 }
 
-output "registry_url" {
-  value       = module.artifact_registry.repository_url
-  description = "Docker registry URL"
-}
-
 output "network_name" {
   value       = module.networking.network_name
   description = "VPC network name"

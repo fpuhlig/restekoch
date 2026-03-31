@@ -30,4 +30,11 @@ resource "google_compute_instance" "main" {
   metadata = {
     ssh-keys = "restekoch:${var.ssh_pub_key}"
   }
+
+  service_account {
+    scopes = [
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring.write",
+    ]
+  }
 }

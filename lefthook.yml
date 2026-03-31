@@ -15,6 +15,9 @@ pre-commit:
     terraform-fmt:
       glob: "terraform/**/*.tf"
       run: terraform -chdir=terraform fmt -check
+    ansible-lint:
+      glob: "ansible/**/*.yml"
+      run: cd ansible && ansible-lint
 
 pre-push:
   parallel: true

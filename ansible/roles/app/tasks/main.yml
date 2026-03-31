@@ -1,0 +1,31 @@
+- name: Create app directory
+  ansible.builtin.file:
+    path: /opt/restekoch
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+
+- name: Copy docker-compose file
+  ansible.builtin.template:
+    src: docker-compose.prod.yml.j2
+    dest: /opt/restekoch/docker-compose.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Pull latest images
+  ansible.builtin.command: docker compose pull
+  args:
+    chdir: /opt/restekoch
+  become: true
+  become_user: "{{ ansible_user }}"
+  changed_when: false
+
+- name: Start containers
+  ansible.builtin.command: docker compose up -d --remove-orphans
+  args:
+    chdir: /opt/restekoch
+  become: true
+  become_user: "{{ ansible_user }}"
+  changed_when: false

@@ -23,7 +23,6 @@ gcloud services enable \
   firestore.googleapis.com \
   redis.googleapis.com \
   aiplatform.googleapis.com \
-  artifactregistry.googleapis.com \
   --project="$PROJECT_ID"
 
 # Create state bucket (Terraform needs this before it can init)

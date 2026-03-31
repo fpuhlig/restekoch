@@ -17,7 +17,7 @@ chmod +x bootstrap.sh
 This creates:
 - The GCP project
 - Links the billing account
-- Enables required APIs (Compute, Firestore, Redis, Vertex AI, Artifact Registry)
+- Enables required APIs (Compute, Firestore, Redis, Vertex AI)
 - Creates the GCS bucket for Terraform remote state
 
 Why not in Terraform? Chicken-and-egg problem. Terraform stores its state in the
@@ -36,8 +36,10 @@ VPC (restekoch-vpc)
       -> Docker containers (backend, frontend, monitoring)
     Memorystore Redis 7.2 (1GB, basic tier, private access)
   Firestore (native mode)
-  Artifact Registry (Docker format)
 ```
+
+Docker images are hosted on GHCR (GitHub Container Registry), not on GCP.
+See docs/adr/004-artifact-registry.md for why.
 
 ## Modules
 
@@ -45,7 +47,6 @@ VPC (restekoch-vpc)
 - **vm**: GCE instance with static external IP, SSH access via public key
 - **memorystore**: Redis 7.2 instance connected to the VPC, used for semantic cache and vector search
 - **firestore**: Document database for recipe storage
-- **artifact-registry**: Docker image registry for backend and frontend containers
 
 ## Usage
 
@@ -63,7 +64,6 @@ terraform apply
 After apply, Terraform prints:
 - `vm_ip`: SSH and HTTP access to the VM
 - `redis_host` + `redis_port`: connection details for the app (internal, not public)
-- `registry_url`: where to push Docker images
 - `network_name`: VPC name
 
 ## Destroy

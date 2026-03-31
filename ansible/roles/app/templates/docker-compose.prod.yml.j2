@@ -1,0 +1,29 @@
+services:
+  backend:
+    image: {{ backend_image }}
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_HOST={{ redis_host }}
+      - REDIS_PORT={{ redis_port }}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/q/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    image: {{ frontend_image }}
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 10s
+      timeout: 3s
+      retries: 3

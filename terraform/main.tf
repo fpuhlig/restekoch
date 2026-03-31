@@ -52,9 +52,3 @@ module "firestore" {
   region     = var.region
 }
 
-module "artifact_registry" {
-  source = "./modules/artifact-registry"
-
-  project_id = var.project_id
-  region     = var.region
-}

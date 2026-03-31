@@ -1,0 +1,6 @@
+- name: Deploy Restekoch
+  hosts: all
+  become: true
+  roles:
+    - docker
+    - app

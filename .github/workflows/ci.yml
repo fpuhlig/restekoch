@@ -29,6 +29,12 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v5
       - run: cd backend && ./gradlew test
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/build/jacoco-report/
 
   frontend-lint:
     runs-on: ubuntu-latest

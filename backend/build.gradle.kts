@@ -3,7 +3,6 @@ plugins {
     kotlin("plugin.allopen") version "2.3.10"
     id("io.quarkus")
     id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
-    jacoco
 }
 
 repositories {
@@ -16,6 +15,13 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
+    testImplementation("io.quarkus:quarkus-jacoco")
+    implementation("io.quarkiverse.googlecloudservices:quarkus-google-cloud-firestore")
+    implementation(
+        enforcedPlatform(
+            "$quarkusPlatformGroupId:quarkus-google-cloud-services-bom:$quarkusPlatformVersion",
+        ),
+    )
     implementation(enforcedPlatform("$quarkusPlatformGroupId:$quarkusPlatformArtifactId:$quarkusPlatformVersion"))
     implementation("io.quarkus:quarkus-rest-jackson")
     implementation("io.quarkus:quarkus-kotlin")
@@ -38,15 +44,6 @@ java {
 
 tasks.withType<Test> {
     systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
-    finalizedBy(tasks.jacocoTestReport)
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    reports {
-        xml.required = true
-        html.required = true
-    }
 }
 allOpen {
     annotation("jakarta.ws.rs.Path")

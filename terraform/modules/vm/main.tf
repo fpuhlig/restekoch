@@ -5,11 +5,12 @@ resource "google_compute_address" "main" {
 }
 
 resource "google_compute_instance" "main" {
-  name         = "restekoch-vm"
-  project      = var.project_id
-  zone         = var.zone
-  machine_type = "e2-medium"
-  tags         = ["restekoch-vm"]
+  name                      = "restekoch-vm"
+  project                   = var.project_id
+  zone                      = var.zone
+  machine_type              = "e2-medium"
+  tags                      = ["restekoch-vm"]
+  allow_stopping_for_update = true
 
   boot_disk {
     initialize_params {
@@ -33,6 +34,7 @@ resource "google_compute_instance" "main" {
 
   service_account {
     scopes = [
+      "https://www.googleapis.com/auth/datastore",
       "https://www.googleapis.com/auth/logging.write",
       "https://www.googleapis.com/auth/monitoring.write",
     ]

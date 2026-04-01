@@ -14,7 +14,8 @@ pre-commit:
       stage_fixed: true
     terraform-fmt:
       glob: "terraform/**/*.tf"
-      run: terraform -chdir=terraform fmt -check
+      run: terraform -chdir=terraform fmt -recursive
+      stage_fixed: true
     ansible-lint:
       glob: "ansible/**/*.yml"
       run: cd ansible && ansible-lint

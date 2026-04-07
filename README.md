@@ -85,6 +85,8 @@ cd terraform && terraform destroy
 | GET | /api/recipes | List recipes (query: limit, offset) |
 | GET | /api/recipes/{id} | Get recipe by ID |
 | POST | /api/recipes | Create a recipe |
+| GET | /api/search | Search recipes by ingredients (query: ingredients, limit) |
+| POST | /api/index | Index all recipes into Redis for vector search |
 
 ## Project Structure
 

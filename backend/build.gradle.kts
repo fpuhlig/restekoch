@@ -17,6 +17,8 @@ val quarkusPlatformVersion: String by project
 dependencies {
     testImplementation("io.quarkus:quarkus-jacoco")
     implementation("io.quarkiverse.googlecloudservices:quarkus-google-cloud-firestore")
+    implementation("io.quarkus:quarkus-redis-client")
+    implementation("com.google.cloud:google-cloud-aiplatform")
     implementation(
         enforcedPlatform(
             "$quarkusPlatformGroupId:quarkus-google-cloud-services-bom:$quarkusPlatformVersion",

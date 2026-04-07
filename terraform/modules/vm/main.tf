@@ -34,9 +34,7 @@ resource "google_compute_instance" "main" {
 
   service_account {
     scopes = [
-      "https://www.googleapis.com/auth/datastore",
-      "https://www.googleapis.com/auth/logging.write",
-      "https://www.googleapis.com/auth/monitoring.write",
+      "https://www.googleapis.com/auth/cloud-platform",
     ]
   }
 }

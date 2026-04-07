@@ -90,15 +90,29 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Determine image tag
+        id: tag
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            BRANCH="${{ github.head_ref }}"
+            echo "tag=${BRANCH//\//-}" >> $GITHUB_OUTPUT
+            echo "push=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=dev" >> $GITHUB_OUTPUT
+            echo "push=false" >> $GITHUB_OUTPUT
+          fi
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
           context: ./backend
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository_owner }}/restekoch-backend:latest
+          push: ${{ steps.tag.outputs.push }}
+          tags: ghcr.io/${{ github.repository_owner }}/restekoch-backend:${{ steps.tag.outputs.tag }}
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository_owner }}/restekoch-frontend:latest
+          push: ${{ steps.tag.outputs.push }}
+          tags: ghcr.io/${{ github.repository_owner }}/restekoch-frontend:${{ steps.tag.outputs.tag }}

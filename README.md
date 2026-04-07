@@ -40,6 +40,29 @@ docker-compose up --build
 Backend: http://localhost:8080/api/status
 Frontend: http://localhost:3000
 
+## Seed Recipes
+
+Load 2000 recipes into Firestore. Requires `google-cloud-firestore` Python package.
+
+```bash
+pip install google-cloud-firestore
+```
+
+Against local emulator (while `quarkus dev` is running):
+
+```bash
+FIRESTORE_EMULATOR_HOST=localhost:8081 python scripts/seed_firestore.py
+```
+
+Against real GCP Firestore:
+
+```bash
+gcloud auth application-default login
+python scripts/seed_firestore.py
+```
+
+The script uses deterministic document IDs. Running it twice overwrites instead of duplicating.
+
 ## Deploy to GCP
 
 ```bash

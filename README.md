@@ -14,22 +14,31 @@ Frontend (React + nginx, port 80)
   |  proxies /api/* to backend
   v
 Backend (Kotlin + Quarkus, port 8080)
-  |-- /api/status    -> health check
-  |-- /api/recipes   -> list, get by ID
-  |-- /api/scan      -> (coming) image upload
-  |-- /api/search    -> (coming) ingredient search
+  |-- /api/status       -> health check
+  |-- /api/recipes      -> CRUD (list, get by ID, create)
+  |-- /api/search       -> semantic search by ingredients (vector KNN)
+  |-- /api/index        -> index recipes into Redis
+  |-- /api/scan         -> (coming) image upload + Gemini Vision
+  |-- /q/openapi        -> OpenAPI 3.1 spec
+  |-- /q/swagger-ui     -> interactive API docs (dev only)
+  |-- /q/health         -> health checks
+  |-- /q/metrics        -> Prometheus metrics
   |
   +-- RecipeService -> RecipeRepository -> Firestore
-  +-- ScanService   -> (coming) Gemini Vision
-  +-- SearchService -> (coming) Redis Vector Search
-  +-- CacheService  -> (coming) Semantic Cache
+  +-- SearchService -> RedisVectorRepository -> Memorystore Redis
+  +-- EmbeddingService -> Vertex AI text-embedding-004
+  +-- ScanService      -> (coming) Gemini Vision
+  +-- CacheService     -> (coming) Semantic Cache
   |
   v
 GCP Services
-  +-- Firestore (recipe storage)
-  +-- Memorystore Redis (cache + vector search)
-  +-- Vertex AI (Gemini Vision, embeddings)
+  +-- Firestore (recipe storage, 2000 recipes)
+  +-- Memorystore Redis 7.2 (HNSW vector index, KNN search)
+  +-- Vertex AI (text-embedding-004, 768 dimensions)
 ```
+
+Every response includes an `X-Request-Id` header for log correlation.
+Error responses return structured JSON (`message`, `requestId`, `timestamp`), never stack traces.
 
 ## Quick Start (local)
 
@@ -85,8 +94,12 @@ cd terraform && terraform destroy
 | GET | /api/recipes | List recipes (query: limit, offset) |
 | GET | /api/recipes/{id} | Get recipe by ID |
 | POST | /api/recipes | Create a recipe |
-| GET | /api/search | Search recipes by ingredients (query: ingredients, limit) |
-| POST | /api/index | Index all recipes into Redis for vector search |
+| GET | /api/search | Semantic recipe search (query: ingredients, limit) |
+| POST | /api/index | Index all recipes into Redis (batch embed + HSET) |
+| GET | /q/openapi | OpenAPI 3.1 specification |
+| GET | /q/swagger-ui | Interactive API docs (dev profile only) |
+| GET | /q/health | Liveness and readiness checks |
+| GET | /q/metrics | Prometheus metrics |
 
 ## Project Structure
 
@@ -95,7 +108,7 @@ backend/       Kotlin + Quarkus REST API
 frontend/      React + Vite
 terraform/     GCP infrastructure (VPC, VM, Redis, Firestore)
 ansible/       Deployment automation (Docker, app containers)
-monitoring/    Prometheus + Grafana (coming)
+monitoring/    Prometheus + Grafana (planned)
 scripts/       Helper scripts (image push, vault update, recipe filter)
 docs/adr/      Architecture Decision Records
 ```

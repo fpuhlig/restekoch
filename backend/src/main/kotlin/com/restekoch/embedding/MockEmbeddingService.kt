@@ -5,8 +5,9 @@ import jakarta.enterprise.context.ApplicationScoped
 import java.security.MessageDigest
 
 /**
- * Deterministic fake embeddings for dev mode.
+ * Deterministic fake embeddings for dev/test.
  * Same text always produces the same vector. No API call needed.
+ * Active unless VertexEmbeddingService takes priority via restekoch.vertex.enabled=true.
  */
 @ApplicationScoped
 @DefaultBean

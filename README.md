@@ -18,7 +18,7 @@ Backend (Kotlin + Quarkus, port 8080)
   |-- /api/recipes      -> CRUD (list, get by ID, create)
   |-- /api/search       -> semantic search by ingredients (vector KNN)
   |-- /api/index        -> index recipes into Redis
-  |-- /api/scan         -> (coming) image upload + Gemini Vision
+  |-- /api/scan         -> fridge photo scan + RAG recipe suggestions
   |-- /q/openapi        -> OpenAPI 3.1 spec
   |-- /q/swagger-ui     -> interactive API docs (dev only)
   |-- /q/health         -> health checks
@@ -27,14 +27,15 @@ Backend (Kotlin + Quarkus, port 8080)
   +-- RecipeService -> RecipeRepository -> Firestore
   +-- SearchService -> RedisVectorRepository -> Memorystore Redis
   +-- EmbeddingService -> Vertex AI text-embedding-004
-  +-- ScanService      -> (coming) Gemini Vision
+  +-- ScanService      -> GeminiService + SearchService (RAG orchestration)
+  +-- GeminiService    -> Vertex AI Gemini 2.5 Flash (vision + text)
   +-- CacheService     -> (coming) Semantic Cache
   |
   v
 GCP Services
   +-- Firestore (recipe storage, 2000 recipes)
   +-- Memorystore Redis 7.2 (HNSW vector index, KNN search)
-  +-- Vertex AI (text-embedding-004, 768 dimensions)
+  +-- Vertex AI (Gemini 2.5 Flash vision+text, text-embedding-004 768d)
 ```
 
 Every response includes an `X-Request-Id` header for log correlation.
@@ -94,6 +95,7 @@ cd terraform && terraform destroy
 | GET | /api/recipes | List recipes (query: limit, offset) |
 | GET | /api/recipes/{id} | Get recipe by ID |
 | POST | /api/recipes | Create a recipe |
+| POST | /api/scan | Upload fridge photo, get recipe suggestions (multipart image) |
 | GET | /api/search | Semantic recipe search (query: ingredients, limit) |
 | POST | /api/index | Index all recipes into Redis (batch embed + HSET) |
 | GET | /q/openapi | OpenAPI 3.1 specification |

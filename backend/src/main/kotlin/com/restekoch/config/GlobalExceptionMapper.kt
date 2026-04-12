@@ -5,10 +5,13 @@ import jakarta.inject.Inject
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.Context
 import jakarta.ws.rs.core.Response
+import org.jboss.logging.Logger
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 import java.time.Instant
 
 class GlobalExceptionMapper {
+    private val log = Logger.getLogger(GlobalExceptionMapper::class.java)
+
     @Inject
     lateinit var requestIdHolder: RequestIdHolder
 
@@ -27,6 +30,7 @@ class GlobalExceptionMapper {
 
     @ServerExceptionMapper
     fun mapGeneric(e: Exception): Response {
+        log.error("Unhandled exception", e)
         return buildResponse(Response.Status.INTERNAL_SERVER_ERROR, "Internal server error")
     }
 

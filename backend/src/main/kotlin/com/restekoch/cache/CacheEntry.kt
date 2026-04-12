@@ -1,12 +1,10 @@
-package com.restekoch.scan
+package com.restekoch.cache
 
-import com.restekoch.recipe.Recipe
 import io.quarkus.runtime.annotations.RegisterForReflection
 
 @RegisterForReflection
-data class ScanResponse(
+data class CacheEntry(
     val ingredients: List<String>,
-    val recipes: List<Recipe>,
+    val recipesJson: String,
     val explanation: String,
-    val cached: Boolean = false,
 )

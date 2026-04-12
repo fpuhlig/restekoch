@@ -30,8 +30,9 @@ class VertexGeminiService(
     ): List<String> {
         val prompt =
             "List all food ingredients visible in this image. " +
-                "Return ONLY a comma-separated list of ingredient names. " +
-                "No quantities, no descriptions, no numbering, no explanations."
+                "Return ONLY a comma-separated list of base ingredient names. " +
+                "Use the simplest form: 'eggs' not 'hard-boiled eggs', 'tomatoes' not 'cherry tomatoes'. " +
+                "No quantities, no preparation methods, no adjectives, no numbering, no explanations."
 
         val imagePart =
             Part.newBuilder()

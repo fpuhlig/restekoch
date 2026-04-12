@@ -27,9 +27,9 @@ Backend (Kotlin + Quarkus, port 8080)
   +-- RecipeService -> RecipeRepository -> Firestore
   +-- SearchService -> RedisVectorRepository -> Memorystore Redis
   +-- EmbeddingService -> Vertex AI text-embedding-004
-  +-- ScanService      -> GeminiService + SearchService (RAG orchestration)
+  +-- ScanService      -> GeminiService + SearchService + CacheService (RAG)
   +-- GeminiService    -> Vertex AI Gemini 2.5 Flash (vision + text)
-  +-- CacheService     -> (coming) Semantic Cache
+  +-- SemanticCacheService -> RedisCacheRepository -> Memorystore Redis (idx:cache)
   |
   v
 GCP Services
@@ -97,7 +97,10 @@ cd terraform && terraform destroy
 | POST | /api/recipes | Create a recipe |
 | POST | /api/scan | Upload fridge photo, get recipe suggestions (multipart image) |
 | GET | /api/search | Semantic recipe search (query: ingredients, limit) |
-| POST | /api/index | Index all recipes into Redis (batch embed + HSET) |
+| POST | /api/index | Index all recipes into Redis (batch embed + HSET), clears cache |
+| GET | /api/cache/stats | Cache statistics (hits, misses, hit rate, entries) |
+| DELETE | /api/cache | Clear the semantic cache |
+| POST | /api/cache/init | Initialize the cache index |
 | GET | /q/openapi | OpenAPI 3.1 specification |
 | GET | /q/swagger-ui | Interactive API docs (dev profile only) |
 | GET | /q/health | Liveness and readiness checks |

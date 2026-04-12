@@ -1,5 +1,6 @@
 package com.restekoch.scan
 
+import com.restekoch.cache.SemanticCacheService
 import com.restekoch.gemini.GeminiService
 import com.restekoch.search.SearchService
 import jakarta.enterprise.context.ApplicationScoped
@@ -9,6 +10,7 @@ import org.jboss.logging.Logger
 class ScanService(
     val geminiService: GeminiService,
     val searchService: SearchService,
+    val cacheService: SemanticCacheService,
 ) {
     private val log = Logger.getLogger(ScanService::class.java)
 
@@ -22,6 +24,12 @@ class ScanService(
         val ingredients = geminiService.detectIngredients(imageBytes, mimeType)
         log.info("Detected ${ingredients.size} ingredients: $ingredients")
 
+        val cached = cacheService.lookup(ingredients)
+        if (cached != null) {
+            log.info("Returning cached result for ${ingredients.size} ingredients")
+            return cached
+        }
+
         val recipes = searchService.search(ingredients, limit)
         log.info("Found ${recipes.size} matching recipes")
 
@@ -32,10 +40,13 @@ class ScanService(
                 "No matching recipes found for the detected ingredients."
             }
 
+        cacheService.store(ingredients, recipes, explanation)
+
         return ScanResponse(
             ingredients = ingredients,
             recipes = recipes,
             explanation = explanation,
+            cached = false,
         )
     }
 }

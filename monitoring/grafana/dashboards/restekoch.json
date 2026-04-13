@@ -1,0 +1,606 @@
+{
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "title": "Uptime",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "process_uptime_seconds{job=\"restekoch-backend\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"})",
+          "legendFormat": "total",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Requests by Endpoint",
+      "type": "bargauge",
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient"
+      },
+      "targets": [
+        {
+          "expr": "sum by (uri) (http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"})",
+          "legendFormat": "{{uri}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "HTTP Status Codes",
+      "type": "piechart",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum by (status) (http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"})",
+          "legendFormat": "{{status}}",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Request Rate",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"}[5m]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "title": "Semantic Cache (Focus Feature)",
+      "type": "row"
+    },
+    {
+      "title": "Cache Hit Rate",
+      "type": "gauge",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 60
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "(restekoch_cache_hits_total / clamp_min(restekoch_cache_hits_total + restekoch_cache_misses_total, 1)) * 100",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Cache Hits vs Misses",
+      "type": "barchart",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "restekoch_cache_hits_total",
+          "legendFormat": "Hits"
+        },
+        {
+          "expr": "restekoch_cache_misses_total",
+          "legendFormat": "Misses"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Scan Total: Hit vs Miss",
+      "type": "barchart",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "restekoch_scan_total_seconds_sum{cache=\"miss\"} / clamp_min(restekoch_scan_total_seconds_count{cache=\"miss\"}, 1)",
+          "legendFormat": "Cache Miss (full pipeline)",
+          "instant": true,
+          "range": false
+        },
+        {
+          "expr": "restekoch_scan_total_seconds_sum{cache=\"hit\"} / clamp_min(restekoch_scan_total_seconds_count{cache=\"hit\"}, 1)",
+          "legendFormat": "Cache Hit (RAG skipped)",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Cache Hit Rate over Time",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "targets": [
+        {
+          "expr": "increase(restekoch_cache_hits_total[5m]) / clamp_min(increase(restekoch_cache_hits_total[5m]) + increase(restekoch_cache_misses_total[5m]), 1) * 100",
+          "legendFormat": "Hit Rate %"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "title": "RED: Rate, Errors, Duration",
+      "type": "row"
+    },
+    {
+      "title": "Requests per Second",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (uri) (rate(http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"}[5m]))",
+          "legendFormat": "{{uri}}"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Error Rate",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"restekoch-backend\",status=~\"4..|5..\",uri=~\"/api/.*\"}[5m])) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"}[5m])), 0.001) * 100 or vector(0)",
+          "legendFormat": "Error %"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Response Duration (avg by endpoint)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (uri) (rate(http_server_requests_seconds_sum{job=\"restekoch-backend\",uri=~\"/api/.*\"}[5m])) / sum by (uri) (rate(http_server_requests_seconds_count{job=\"restekoch-backend\",uri=~\"/api/.*\"}[5m]))",
+          "legendFormat": "{{uri}}"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "title": "Backend: External APIs and Runtime",
+      "type": "row"
+    },
+    {
+      "title": "Vertex AI Durations",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "restekoch_gemini_detect_seconds_sum / clamp_min(restekoch_gemini_detect_seconds_count, 1)",
+          "legendFormat": "Gemini Vision"
+        },
+        {
+          "expr": "restekoch_gemini_explain_seconds_sum / clamp_min(restekoch_gemini_explain_seconds_count, 1)",
+          "legendFormat": "Gemini Explain"
+        },
+        {
+          "expr": "restekoch_embedding_duration_seconds_sum / clamp_min(restekoch_embedding_duration_seconds_count, 1)",
+          "legendFormat": "Embedding"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Redis Command Duration",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 20
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(redis_commands_duration_seconds_sum[5m]) / clamp_min(rate(redis_commands_duration_seconds_count[5m]), 0.001)",
+          "legendFormat": "avg command"
+        },
+        {
+          "expr": "rate(redis_commands_failure_total[5m])",
+          "legendFormat": "failures/s"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "JVM Heap Memory",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 20
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\",job=\"restekoch-backend\"})",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "sum(jvm_memory_max_bytes{area=\"heap\",job=\"restekoch-backend\"})",
+          "legendFormat": "Max"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "title": "USE: System Resources (Node Exporter)",
+      "type": "row"
+    },
+    {
+      "title": "CPU Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 27
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "targets": [
+        {
+          "expr": "100 - (avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+          "legendFormat": "CPU %"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Memory Usage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 27
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "targets": [
+        {
+          "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+          "legendFormat": "Used"
+        },
+        {
+          "expr": "node_memory_MemTotal_bytes",
+          "legendFormat": "Total"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Disk Usage",
+      "type": "gauge",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 27
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Network I/O",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 27
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(node_network_receive_bytes_total{device!=\"lo\"}[5m])",
+          "legendFormat": "Receive"
+        },
+        {
+          "expr": "rate(node_network_transmit_bytes_total{device!=\"lo\"}[5m])",
+          "legendFormat": "Transmit"
+        }
+      ],
+      "datasource": "Prometheus"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [
+    "restekoch"
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "title": "Restekoch",
+  "uid": "restekoch-main",
+  "version": 10
+}

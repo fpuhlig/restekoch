@@ -6,6 +6,19 @@
     group: "{{ ansible_user }}"
     mode: "0755"
 
+- name: Create monitoring directories
+  ansible.builtin.file:
+    path: "/opt/restekoch/{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0755"
+  loop:
+    - prometheus
+    - grafana/provisioning/datasources
+    - grafana/provisioning/dashboards
+    - grafana/dashboards
+
 - name: Copy docker-compose file
   ansible.builtin.template:
     src: docker-compose.prod.yml.j2
@@ -13,6 +26,39 @@
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: "0644"
+
+- name: Copy Prometheus config
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../monitoring/prometheus/prometheus.yml"
+    dest: /opt/restekoch/prometheus/prometheus.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Copy Grafana datasource config
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../monitoring/grafana/provisioning/datasources/prometheus.yml"
+    dest: /opt/restekoch/grafana/provisioning/datasources/prometheus.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Copy Grafana dashboard provisioning config
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../monitoring/grafana/provisioning/dashboards/dashboard.yml"
+    dest: /opt/restekoch/grafana/provisioning/dashboards/dashboard.yml
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+
+- name: Copy Grafana dashboard JSON
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../monitoring/grafana/dashboards/restekoch.json"
+    dest: /opt/restekoch/grafana/dashboards/restekoch.json
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "0644"
+  notify: Restart grafana
 
 - name: Pull latest images
   ansible.builtin.command: docker compose pull

@@ -5,3 +5,5 @@ redis_port: 6379
 
 backend_image: "ghcr.io/{{ ghcr_owner }}/restekoch-backend:latest"
 frontend_image: "ghcr.io/{{ ghcr_owner }}/restekoch-frontend:latest"
+
+grafana_password: "{{ vault_grafana_password }}"

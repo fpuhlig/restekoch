@@ -8,6 +8,7 @@ import com.google.cloud.aiplatform.v1.Part
 import com.google.cloud.aiplatform.v1.PredictionServiceClient
 import com.google.cloud.aiplatform.v1.PredictionServiceSettings
 import com.google.protobuf.ByteString
+import io.micrometer.core.annotation.Timed
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.jboss.logging.Logger
@@ -24,6 +25,7 @@ class VertexGeminiService(
 ) : GeminiService {
     private val log = Logger.getLogger(VertexGeminiService::class.java)
 
+    @Timed(value = "restekoch.gemini.detect", description = "Gemini Vision ingredient detection")
     override fun detectIngredients(
         imageBytes: ByteArray,
         mimeType: String,
@@ -59,6 +61,7 @@ class VertexGeminiService(
             .filter { it.isNotBlank() }
     }
 
+    @Timed(value = "restekoch.gemini.explain", description = "Gemini Text recipe explanation")
     override fun explainRecipes(
         ingredients: List<String>,
         recipeTitles: List<String>,

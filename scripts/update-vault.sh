@@ -27,9 +27,22 @@ all:
       ansible_ssh_private_key_file: "{{ ssh_private_key | default('~/.ssh/id_rsa') }}"
 EOF
 
+# Read existing vault values (if vault exists and is encrypted)
+GRAFANA_PASS=""
+if [ -f "$VAULT_FILE" ]; then
+  GRAFANA_PASS=$(ansible-vault view "$VAULT_FILE" --vault-password-file "$VAULT_PASS" 2>/dev/null | grep vault_grafana_password | cut -d'"' -f2 || echo "")
+fi
+
+if [ -z "$GRAFANA_PASS" ]; then
+  echo "Error: no vault_grafana_password found in vault."
+  echo "Set it first: ansible-vault edit ansible/group_vars/vault.yml"
+  exit 1
+fi
+
 # Secrets go in vault
 cat > "$VAULT_FILE" << EOF
 vault_redis_host: "$REDIS_HOST"
+vault_grafana_password: "$GRAFANA_PASS"
 EOF
 
 ansible-vault encrypt "$VAULT_FILE" --vault-password-file "$VAULT_PASS"

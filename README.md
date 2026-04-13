@@ -36,6 +36,11 @@ GCP Services
   +-- Firestore (recipe storage, 2000 recipes)
   +-- Memorystore Redis 7.2 (HNSW vector index, KNN search)
   +-- Vertex AI (Gemini 2.5 Flash vision+text, text-embedding-004 768d)
+
+Monitoring
+  +-- Node Exporter (port 9100) -> system metrics (CPU, memory, disk, network)
+  +-- Prometheus (port 9090)    -> scrapes /q/metrics + Node Exporter
+  +-- Grafana (port 3000)       -> 16-panel dashboard (RED + USE + app metrics)
 ```
 
 Every response includes an `X-Request-Id` header for log correlation.
@@ -113,7 +118,7 @@ backend/       Kotlin + Quarkus REST API
 frontend/      React + Vite
 terraform/     GCP infrastructure (VPC, VM, Redis, Firestore)
 ansible/       Deployment automation (Docker, app containers)
-monitoring/    Prometheus + Grafana (planned)
+monitoring/    Prometheus config, Grafana dashboards and provisioning
 scripts/       Helper scripts (image push, vault update, recipe filter)
 docs/adr/      Architecture Decision Records
 ```

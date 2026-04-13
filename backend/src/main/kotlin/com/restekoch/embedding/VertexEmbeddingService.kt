@@ -5,6 +5,7 @@ import com.google.cloud.aiplatform.v1.PredictRequest
 import com.google.cloud.aiplatform.v1.PredictionServiceClient
 import com.google.protobuf.Value
 import com.google.protobuf.util.JsonFormat
+import io.micrometer.core.annotation.Timed
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.config.inject.ConfigProperty
 
@@ -18,6 +19,7 @@ class VertexEmbeddingService(
     @ConfigProperty(name = "restekoch.embedding.model", defaultValue = "text-embedding-004")
     val model: String,
 ) : EmbeddingService {
+    @Timed(value = "restekoch.embedding.duration", description = "Vertex AI embedding generation")
     override fun embed(text: String): FloatArray {
         return embedBatch(listOf(text))[0]
     }

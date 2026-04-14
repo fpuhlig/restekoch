@@ -1,3 +1,7 @@
 node_modules/
 dist/
 .idea/
+src/**/*.test.ts
+src/**/*.test.tsx
+src/test-setup.ts
+vitest.config.ts

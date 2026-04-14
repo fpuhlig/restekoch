@@ -52,6 +52,21 @@ jobs:
       - run: cd frontend && pnpm lint
       - run: cd frontend && pnpm format:check
 
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: cd frontend && pnpm install --frozen-lockfile
+      - run: cd frontend && pnpm test
+
   terraform:
     runs-on: ubuntu-latest
     steps:

@@ -10,7 +10,8 @@ Upload a photo of your ingredients. The app identifies them and suggests matchin
 Client (Browser)
   |
   v
-Frontend (React + nginx, port 80)
+Frontend (React + Vite, port 80)
+  |  photo upload, ingredient display, recipe cards
   |  proxies /api/* to backend
   v
 Backend (Kotlin + Quarkus, port 8080)
@@ -111,11 +112,35 @@ cd terraform && terraform destroy
 | GET | /q/health | Liveness and readiness checks |
 | GET | /q/metrics | Prometheus metrics |
 
+## Frontend
+
+Single page app built with React and plain CSS (no component library). Warm Kitchen color theme.
+
+Features:
+- Drag and drop or camera photo upload
+- Ingredient detection display as tags
+- Recipe suggestion cards with ingredient match highlighting
+- Cache hit/miss badge on each recipe card
+- Scan duration display (demonstrates cache speed difference)
+- Error handling with dismissable messages
+
+Local development with Vite proxy (no CORS needed):
+
+```bash
+cd frontend && pnpm install && pnpm dev
+```
+
+38 tests with Vitest and React Testing Library:
+
+```bash
+cd frontend && pnpm test
+```
+
 ## Project Structure
 
 ```
 backend/       Kotlin + Quarkus REST API
-frontend/      React + Vite
+frontend/      React + Vite (photo upload, recipe display, cache badges)
 terraform/     GCP infrastructure (VPC, VM, Redis, Firestore)
 ansible/       Deployment automation (Docker, app containers)
 monitoring/    Prometheus config, Grafana dashboards and provisioning

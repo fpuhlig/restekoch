@@ -26,6 +26,6 @@ pre-push:
     backend-test:
       glob: "backend/**/*.{kt,kts}"
       run: cd backend && ./gradlew test
-    frontend-build:
+    frontend-test:
       glob: "frontend/**/*.{ts,tsx}"
-      run: cd frontend && pnpm build
+      run: cd frontend && pnpm test

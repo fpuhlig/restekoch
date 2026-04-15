@@ -10,9 +10,18 @@ Upload a photo of your ingredients. The app identifies them and suggests matchin
 Client (Browser)
   |
   v
-Frontend (React + Vite, port 80)
+Gateway (nginx, port 80)
+  |  rate limiting on /api/scan (10 req/min per IP)
+  |  admin restriction on /api/index and /api/cache (internal only)
+  |  security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy)
+  |
+  +-- /           -> Frontend (static files)
+  +-- /api/*      -> Backend
+  +-- /health     -> 200 ok (gateway health)
+  |
+  v
+Frontend (React + Vite)
   |  photo upload, ingredient display, recipe cards
-  |  proxies /api/* to backend
   v
 Backend (Kotlin + Quarkus, port 8080)
   |-- /api/status       -> health check
@@ -130,7 +139,7 @@ Local development with Vite proxy (no CORS needed):
 cd frontend && pnpm install && pnpm dev
 ```
 
-38 tests with Vitest and React Testing Library:
+54 tests with Vitest and React Testing Library:
 
 ```bash
 cd frontend && pnpm test

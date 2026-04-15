@@ -1,4 +1,21 @@
 services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
   backend:
     build: ./backend
     ports:
@@ -18,13 +35,12 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "3000:80"
     depends_on:
       backend:
         condition: service_healthy
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/"]
       interval: 10s
       timeout: 3s
       retries: 3

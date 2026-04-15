@@ -32,6 +32,14 @@ export async function scanImage(
 
   clearTimeout(timeout)
 
+  if (response.status === 429) {
+    throw new Error('Too many scan requests. Please wait a moment.')
+  }
+
+  if (response.status >= 502 && response.status <= 504) {
+    throw new Error('Service temporarily unavailable. Please try again later.')
+  }
+
   if (!response.ok) {
     const body = await response.json().catch(() => null)
     const message = body?.message ?? `Scan failed (${response.status})`

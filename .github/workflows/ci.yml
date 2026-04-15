@@ -131,3 +131,9 @@ jobs:
           context: ./frontend
           push: ${{ steps.tag.outputs.push }}
           tags: ghcr.io/${{ github.repository_owner }}/restekoch-frontend:${{ steps.tag.outputs.tag }}
+      - name: Build and push gateway
+        uses: docker/build-push-action@v6
+        with:
+          context: ./gateway
+          push: ${{ steps.tag.outputs.push }}
+          tags: ghcr.io/${{ github.repository_owner }}/restekoch-gateway:${{ steps.tag.outputs.tag }}

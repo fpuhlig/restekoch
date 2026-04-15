@@ -1,8 +1,23 @@
 services:
+  gateway:
+    image: {{ gateway_image }}
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
   backend:
     image: {{ backend_image }}
-    ports:
-      - "8080:8080"
     environment:
       - REDIS_HOST={{ redis_host }}
       - REDIS_PORT={{ redis_port }}
@@ -16,14 +31,12 @@ services:
 
   frontend:
     image: {{ frontend_image }}
-    ports:
-      - "80:80"
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/"]
       interval: 10s
       timeout: 3s
       retries: 3

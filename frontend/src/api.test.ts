@@ -44,6 +44,43 @@ describe('scanImage', () => {
     expect(call[0]).toBe('/api/scan?limit=10')
   })
 
+  it('throws rate limit error on 429', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: () => Promise.resolve({ error: 'Too many scan requests.' }),
+    } as Response)
+
+    const file = new File(['fake'], 'photo.jpg', { type: 'image/jpeg' })
+    await expect(scanImage(file)).rejects.toThrow('Too many scan requests. Please wait a moment.')
+  })
+
+  it('throws service unavailable on 502', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 502,
+      json: () => Promise.resolve({ error: 'Bad Gateway' }),
+    } as Response)
+
+    const file = new File(['fake'], 'photo.jpg', { type: 'image/jpeg' })
+    await expect(scanImage(file)).rejects.toThrow(
+      'Service temporarily unavailable. Please try again later.',
+    )
+  })
+
+  it('throws service unavailable on 503', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: false,
+      status: 503,
+      json: () => Promise.resolve({ error: 'Service unavailable' }),
+    } as Response)
+
+    const file = new File(['fake'], 'photo.jpg', { type: 'image/jpeg' })
+    await expect(scanImage(file)).rejects.toThrow(
+      'Service temporarily unavailable. Please try again later.',
+    )
+  })
+
   it('throws on non-ok response with error message from body', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,

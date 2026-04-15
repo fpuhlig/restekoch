@@ -30,6 +30,13 @@ docker build -t "${REGISTRY}/frontend:latest" ./frontend
 echo "Pushing frontend..."
 docker push "${REGISTRY}/frontend:latest"
 
+# Build and push gateway
+echo "Building gateway..."
+docker build -t "${REGISTRY}/gateway:latest" ./gateway
+echo "Pushing gateway..."
+docker push "${REGISTRY}/gateway:latest"
+
 echo "Done. Images:"
 echo "  ${REGISTRY}/backend:latest"
 echo "  ${REGISTRY}/frontend:latest"
+echo "  ${REGISTRY}/gateway:latest"

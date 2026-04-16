@@ -139,7 +139,7 @@ Local development with Vite proxy (no CORS needed):
 cd frontend && pnpm install && pnpm dev
 ```
 
-54 tests with Vitest and React Testing Library:
+57 tests with Vitest and React Testing Library:
 
 ```bash
 cd frontend && pnpm test

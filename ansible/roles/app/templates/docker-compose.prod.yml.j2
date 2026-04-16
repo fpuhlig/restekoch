@@ -10,7 +10,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/health"]
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -23,7 +23,7 @@ services:
       - REDIS_PORT={{ redis_port }}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/q/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/q/health"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -36,7 +36,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "--spider", "--tries=1", "http://127.0.0.1/"]
       interval: 10s
       timeout: 3s
       retries: 3

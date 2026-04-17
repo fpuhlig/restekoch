@@ -9,4 +9,5 @@ data class ScanResponse(
     val recipes: List<Recipe>,
     val explanation: String,
     val cached: Boolean = false,
+    val cacheLevel: String? = null,
 )

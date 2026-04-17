@@ -37,4 +37,30 @@ class CacheStatsTest {
         assertEquals(0.0, stats.hitRate)
         assertEquals(0, stats.entries)
     }
+
+    @Test
+    fun `cache stats exposes image cache fields`() {
+        val stats =
+            CacheStats(
+                entries = 5,
+                hits = 4,
+                misses = 1,
+                hitRate = 0.8,
+                enabled = true,
+                similarityThreshold = 0.95,
+                ttlSeconds = 3600,
+                imageEntries = 2,
+                imageHits = 10,
+                imageMisses = 5,
+                imageHitRate = 0.6667,
+                imageEnabled = true,
+                imageTtlSeconds = 86400,
+            )
+        assertEquals(2, stats.imageEntries)
+        assertEquals(10, stats.imageHits)
+        assertEquals(5, stats.imageMisses)
+        assertEquals(0.6667, stats.imageHitRate)
+        assertTrue(stats.imageEnabled)
+        assertEquals(86400, stats.imageTtlSeconds)
+    }
 }

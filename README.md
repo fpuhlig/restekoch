@@ -37,8 +37,9 @@ Backend (Kotlin + Quarkus, port 8080)
   +-- RecipeService -> RecipeRepository -> Firestore
   +-- SearchService -> RedisVectorRepository -> Memorystore Redis
   +-- EmbeddingService -> Vertex AI text-embedding-004
-  +-- ScanService      -> GeminiService + SearchService + CacheService (RAG)
+  +-- ScanService      -> ImageCacheService (L1) -> GeminiService -> SemanticCacheService (L2) -> SearchService
   +-- GeminiService    -> Vertex AI Gemini 2.5 Flash (vision + text)
+  +-- ImageCacheService    -> ImageCacheRepository -> Memorystore Redis (img:{model}:{sha256})
   +-- SemanticCacheService -> RedisCacheRepository -> Memorystore Redis (idx:cache)
   |
   v
@@ -50,7 +51,7 @@ GCP Services
 Monitoring
   +-- Node Exporter (port 9100) -> system metrics (CPU, memory, disk, network)
   +-- Prometheus (port 9090)    -> scrapes /q/metrics + Node Exporter
-  +-- Grafana (port 3000)       -> 16-panel dashboard (RED + USE + app metrics)
+  +-- Grafana (port 3000)       -> 20-panel dashboard (RED + USE + semantic cache + image cache)
 ```
 
 Every response includes an `X-Request-Id` header for log correlation.
@@ -113,9 +114,9 @@ cd terraform && terraform destroy
 | POST | /api/scan | Upload fridge photo, get recipe suggestions (multipart image) |
 | GET | /api/search | Semantic recipe search (query: ingredients, limit) |
 | POST | /api/index | Index all recipes into Redis (batch embed + HSET), clears cache |
-| GET | /api/cache/stats | Cache statistics (hits, misses, hit rate, entries) |
-| DELETE | /api/cache | Clear the semantic cache |
-| POST | /api/cache/init | Initialize the cache index |
+| GET | /api/cache/stats | Cache statistics for both layers (semantic L2 and image L1) |
+| DELETE | /api/cache | Clear both semantic and image caches |
+| POST | /api/cache/init | Initialize both cache indexes |
 | GET | /q/openapi | OpenAPI 3.1 specification |
 | GET | /q/swagger-ui | Interactive API docs (dev profile only) |
 | GET | /q/health | Liveness and readiness checks |

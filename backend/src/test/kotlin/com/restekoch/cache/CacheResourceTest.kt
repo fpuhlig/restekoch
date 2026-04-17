@@ -21,6 +21,19 @@ class CacheResourceTest {
     }
 
     @Test
+    fun `get cache stats exposes image cache metrics`() {
+        given()
+            .`when`()
+            .get("/api/cache/stats")
+            .then()
+            .statusCode(200)
+            .body("imageEnabled", equalTo(true))
+            .body("imageHits", greaterThanOrEqualTo(0))
+            .body("imageMisses", greaterThanOrEqualTo(0))
+            .body("imageTtlSeconds", greaterThanOrEqualTo(0))
+    }
+
+    @Test
     fun `delete cache returns 204`() {
         given()
             .`when`()

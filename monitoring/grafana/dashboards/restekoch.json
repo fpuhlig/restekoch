@@ -300,6 +300,131 @@
         "x": 0,
         "y": 12
       },
+      "title": "Image Cache (L1)",
+      "type": "row"
+    },
+    {
+      "title": "Image Cache Hit Rate",
+      "type": "gauge",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "green",
+                "value": 60
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "(restekoch_image_cache_hits_total / clamp_min(restekoch_image_cache_hits_total + restekoch_image_cache_misses_total, 1)) * 100",
+          "legendFormat": "",
+          "instant": true,
+          "range": false
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Image Cache Hits vs Misses",
+      "type": "barchart",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "targets": [
+        {
+          "expr": "restekoch_image_cache_hits_total",
+          "legendFormat": "Hits"
+        },
+        {
+          "expr": "restekoch_image_cache_misses_total",
+          "legendFormat": "Misses"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Image Cache Lookup Duration (avg)",
+      "type": "stat",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(restekoch_image_cache_lookup_duration_seconds_sum[5m]) / clamp_min(rate(restekoch_image_cache_lookup_duration_seconds_count[5m]), 1)",
+          "legendFormat": "avg lookup"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "title": "Image Cache Hit Rate over Time",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        }
+      },
+      "targets": [
+        {
+          "expr": "increase(restekoch_image_cache_hits_total[5m]) / clamp_min(increase(restekoch_image_cache_hits_total[5m]) + increase(restekoch_image_cache_misses_total[5m]), 1) * 100",
+          "legendFormat": "Hit Rate %"
+        }
+      ],
+      "datasource": "Prometheus"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
       "title": "RED: Rate, Errors, Duration",
       "type": "row"
     },
@@ -310,7 +435,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 13
+        "y": 20
       },
       "fieldConfig": {
         "defaults": {
@@ -332,7 +457,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 13
+        "y": 20
       },
       "fieldConfig": {
         "defaults": {
@@ -354,7 +479,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 13
+        "y": 20
       },
       "fieldConfig": {
         "defaults": {
@@ -375,7 +500,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 26
       },
       "title": "Backend: External APIs and Runtime",
       "type": "row"
@@ -387,7 +512,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 20
+        "y": 27
       },
       "fieldConfig": {
         "defaults": {
@@ -417,7 +542,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 20
+        "y": 27
       },
       "fieldConfig": {
         "defaults": {
@@ -443,7 +568,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 20
+        "y": 27
       },
       "fieldConfig": {
         "defaults": {
@@ -468,7 +593,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 33
       },
       "title": "USE: System Resources (Node Exporter)",
       "type": "row"
@@ -480,7 +605,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 27
+        "y": 34
       },
       "fieldConfig": {
         "defaults": {
@@ -504,7 +629,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 27
+        "y": 34
       },
       "fieldConfig": {
         "defaults": {
@@ -530,7 +655,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 27
+        "y": 34
       },
       "fieldConfig": {
         "defaults": {
@@ -572,7 +697,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 27
+        "y": 34
       },
       "fieldConfig": {
         "defaults": {

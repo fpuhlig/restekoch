@@ -1,5 +1,6 @@
 package com.restekoch.scan
 
+import com.restekoch.cache.ImageCacheService
 import com.restekoch.cache.SemanticCacheService
 import com.restekoch.gemini.GeminiService
 import com.restekoch.search.SearchService
@@ -13,6 +14,7 @@ class ScanService(
     val geminiService: GeminiService,
     val searchService: SearchService,
     val cacheService: SemanticCacheService,
+    val imageCacheService: ImageCacheService,
     val meterRegistry: MeterRegistry,
 ) {
     private val log = Logger.getLogger(ScanService::class.java)
@@ -25,14 +27,26 @@ class ScanService(
         val scanTimer = Timer.start(meterRegistry)
         log.info("Scanning image: ${imageBytes.size} bytes, $mimeType")
 
-        val ingredients = geminiService.detectIngredients(imageBytes, mimeType)
-        log.info("Detected ${ingredients.size} ingredients: $ingredients")
+        val imageCacheHit = imageCacheService.lookup(imageBytes)
+        val ingredients: List<String>
+        val imageHit: Boolean
+        if (imageCacheHit != null) {
+            log.info("Image cache hit, skipping Gemini Vision")
+            ingredients = imageCacheHit
+            imageHit = true
+        } else {
+            ingredients = geminiService.detectIngredients(imageBytes, mimeType)
+            log.info("Detected ${ingredients.size} ingredients: $ingredients")
+            imageCacheService.store(imageBytes, ingredients)
+            imageHit = false
+        }
 
         val cached = cacheService.lookup(ingredients)
         if (cached != null) {
-            log.info("Returning cached result for ${ingredients.size} ingredients")
+            val level = if (imageHit) "L1+L2" else "L2"
+            log.info("Returning cached recipes for ${ingredients.size} ingredients (level $level)")
             scanTimer.stop(meterRegistry.timer("restekoch.scan.total", "cache", "hit"))
-            return cached
+            return cached.copy(cached = true, cacheLevel = level)
         }
 
         val recipes = searchService.search(ingredients, limit)
@@ -46,13 +60,15 @@ class ScanService(
             }
 
         cacheService.store(ingredients, recipes, explanation)
-        scanTimer.stop(meterRegistry.timer("restekoch.scan.total", "cache", "miss"))
+        val tag = if (imageHit) "image" else "miss"
+        scanTimer.stop(meterRegistry.timer("restekoch.scan.total", "cache", tag))
 
         return ScanResponse(
             ingredients = ingredients,
             recipes = recipes,
             explanation = explanation,
-            cached = false,
+            cached = imageHit,
+            cacheLevel = if (imageHit) "L1" else null,
         )
     }
 }

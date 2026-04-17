@@ -79,5 +79,35 @@ class ScanServiceTest {
         assertNull(result.cacheLevel)
     }
 
+    @Test
+    fun `same image twice produces L1 plus L2 hit`() {
+        val bytes = uniqueBytes(20)
+        scanService.scan(bytes, "image/jpeg", 5)
+        val second = scanService.scan(bytes, "image/jpeg", 5)
+        assertTrue(second.cached)
+        assertEquals("L1+L2", second.cacheLevel)
+    }
+
+    @Test
+    fun `different image with same ingredients produces L2-only hit`() {
+        scanService.scan(uniqueBytes(30), "image/jpeg", 5)
+        // Clear L1 only (simulated by using different bytes) while L2 survives.
+        // MockGeminiService returns identical ingredients regardless of input bytes.
+        val second = scanService.scan(uniqueBytes(31), "image/jpeg", 5)
+        assertTrue(second.cached)
+        assertEquals("L2", second.cacheLevel)
+    }
+
+    @Test
+    fun `L1 hit but cleared L2 produces L1-only level`() {
+        val bytes = uniqueBytes(40)
+        scanService.scan(bytes, "image/jpeg", 5)
+        // Clear only L2 (semantic cache). L1 entry for this image hash stays.
+        redisCacheRepository.clear()
+        val second = scanService.scan(bytes, "image/jpeg", 5)
+        assertTrue(second.cached)
+        assertEquals("L1", second.cacheLevel)
+    }
+
     private fun uniqueBytes(seed: Int): ByteArray = ByteArray(100) { (seed + it).toByte() }
 }

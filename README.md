@@ -122,6 +122,21 @@ cd terraform && terraform destroy
 | GET | /q/health | Liveness and readiness checks |
 | GET | /q/metrics | Prometheus metrics |
 
+## Load Testing
+
+Four k6 scenarios live under `load-tests/`, designed to run from inside
+the production VM (localhost is whitelisted by the gateway rate limit).
+Results stream into Prometheus via remote write and surface on the
+Grafana dashboard during each run.
+
+- Scenario 1: image cache L1 hit rate (100 scans of the same image)
+- Scenario 2: search throughput (50 requests, 25 ingredient lists)
+- Scenario 3: recipes baseline (500 paginated Firestore reads)
+- Scenario 4: scan stress (10 concurrent VUs, 10 different images)
+
+See `load-tests/README.md` for the exact run procedure and
+`docs/load-test-results.md` for measured numbers and observations.
+
 ## Frontend
 
 Single page app built with React and plain CSS (no component library). Warm Kitchen color theme.

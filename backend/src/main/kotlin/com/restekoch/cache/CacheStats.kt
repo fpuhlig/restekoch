@@ -11,4 +11,10 @@ data class CacheStats(
     val enabled: Boolean,
     val similarityThreshold: Double,
     val ttlSeconds: Long,
+    val imageEntries: Long = 0,
+    val imageHits: Long = 0,
+    val imageMisses: Long = 0,
+    val imageHitRate: Double = 0.0,
+    val imageEnabled: Boolean = true,
+    val imageTtlSeconds: Long = 0,
 )

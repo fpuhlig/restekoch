@@ -66,6 +66,7 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--storage.tsdb.retention.time=7d"
+      - "--web.enable-remote-write-receiver"
     depends_on:
       backend:
         condition: service_healthy

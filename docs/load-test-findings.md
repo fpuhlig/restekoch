@@ -13,7 +13,7 @@ observation is reproducible.
 
 ### LTF-001: L1-only cache hit takes ~650 ms, dominated by L2 lookup
 
-**Status:** resolved (design, not bug)
+**Status:** resolved (fixed in ADR 013, branch `feat/l1-full-short-circuit`)
 **First observed:** 2026-04-17, Scenario 1 pilot on branch `feat/load-test`
 **Category:** performance, architecture note
 
@@ -45,16 +45,19 @@ first repeat, which is the actual user-facing gain.
 the Redis GET latency plus multipart parsing, measured at about 1 s
 with cached combined L1+L2 in the manual test on April 16.
 
-**Follow-up:**
-- None for now. Document the layering behavior in ADR 012.
-- Optional future: add a `ScanService.scan` overload that returns as
-  soon as ingredients are known and lets the caller decide whether to
-  fetch recipes. Saves ~600 ms on L1 hit when the client only wants
-  ingredient detection.
-- Optional future: reuse the image hash as cache key for L2 too, so
-  L1 hit can short-circuit L2. Changes the semantic model (L2 is now
-  ingredient-keyed on purpose to allow different-image-same-ingredients
-  hits).
+**Resolution (2026-04-17, branch `feat/l1-full-short-circuit`):**
+On reflection the "design by layering" argument is wrong. L1 is keyed by
+the image hash, so two different images never share an L1 entry. The
+ingredient-sharing rationale from ADR 012 applies only to L2, not L1.
+L1 now stores the full `ScanResponse` (ingredients + recipes +
+explanation) as JSON. On L1 hit, `ScanService.scan()` returns the
+stored response directly: no embedding call, no L2 lookup, no search,
+no Gemini. Full short-circuit. Documented in ADR 013. Expected p50 drop
+from ~650 ms to under 100 ms, to be verified by re-running k6
+Scenario 1 after deploy.
+
+**Verification (pending):** Re-run k6 Scenario 1 on GCP, update
+`docs/load-test-results.md` with before/after numbers.
 
 ### LTF-002: Scenario 1 throughput 1.17 req/s
 

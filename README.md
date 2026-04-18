@@ -37,7 +37,7 @@ Backend (Kotlin + Quarkus, port 8080)
   +-- RecipeService -> RecipeRepository -> Firestore
   +-- SearchService -> RedisVectorRepository -> Memorystore Redis
   +-- EmbeddingService -> Vertex AI text-embedding-004
-  +-- ScanService      -> ImageCacheService (L1) -> GeminiService -> SemanticCacheService (L2) -> SearchService
+  +-- ScanService      -> ImageCacheService (L1 full-response short-circuit) -> GeminiService -> SemanticCacheService (L2) -> SearchService
   +-- GeminiService    -> Vertex AI Gemini 2.5 Flash (vision + text)
   +-- ImageCacheService    -> ImageCacheRepository -> Memorystore Redis (img:{model}:{sha256})
   +-- SemanticCacheService -> RedisCacheRepository -> Memorystore Redis (idx:cache)
@@ -136,6 +136,13 @@ Grafana dashboard during each run.
 
 See `load-tests/README.md` for the exact run procedure and
 `docs/load-test-results.md` for measured numbers and observations.
+
+Key measured numbers (after ADR 013, 2026-04-18):
+
+- L1 hit p50: 20 ms, p95: 32 ms
+- Full pipeline (first scan): 11.7 s
+- Speedup on repeat scan: ~580x
+- Under 10 VU concurrency: 37 req/s throughput, 99.22% L1 hit rate
 
 ## Frontend
 

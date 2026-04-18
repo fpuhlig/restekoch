@@ -1,6 +1,7 @@
 package com.restekoch.cache
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.restekoch.scan.ScanResponse
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Timer
 import io.quarkus.runtime.annotations.RegisterForReflection
@@ -31,7 +32,7 @@ class ImageCacheService(
 
     fun keyFor(hash: String): String = "${ImageCacheRepository.PREFIX}$modelName:$hash"
 
-    fun lookup(imageBytes: ByteArray): List<String>? {
+    fun lookup(imageBytes: ByteArray): ScanResponse? {
         if (!cacheEnabled) return null
 
         val sample = Timer.start(meterRegistry)
@@ -43,11 +44,10 @@ class ImageCacheService(
                 log.debug("Image cache miss for key $key")
                 return null
             }
+            val response = objectMapper.readValue(raw, ScanResponse::class.java)
             meterRegistry.counter("restekoch.image_cache.hits").increment()
             log.info("Image cache hit for key $key")
-            val listType =
-                objectMapper.typeFactory.constructCollectionType(List::class.java, String::class.java)
-            return objectMapper.readValue(raw, listType)
+            return response
         } catch (e: Exception) {
             log.warn("Image cache lookup failed, treating as miss: ${e.message}")
             meterRegistry.counter("restekoch.image_cache.misses").increment()
@@ -59,14 +59,14 @@ class ImageCacheService(
 
     fun store(
         imageBytes: ByteArray,
-        ingredients: List<String>,
+        response: ScanResponse,
     ) {
         if (!cacheEnabled) return
-        if (ingredients.isEmpty()) return
+        if (response.ingredients.isEmpty()) return
 
         try {
             val key = keyFor(hash(imageBytes))
-            val json = objectMapper.writeValueAsString(ingredients)
+            val json = objectMapper.writeValueAsString(response)
             cacheRepository.store(key, json, ttlSeconds)
             log.info("Stored image cache entry for key $key")
         } catch (e: Exception) {

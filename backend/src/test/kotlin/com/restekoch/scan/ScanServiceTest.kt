@@ -7,6 +7,7 @@ import io.quarkus.redis.datasource.RedisDataSource
 import io.quarkus.test.junit.QuarkusTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -56,20 +57,27 @@ class ScanServiceTest {
     }
 
     @Test
-    fun `first scan stores image cache entry`() {
+    fun `first scan stores full response in image cache`() {
         val bytes = uniqueBytes(10)
-        scanService.scan(bytes, "image/jpeg", 5)
+        val first = scanService.scan(bytes, "image/jpeg", 5)
         val cached = imageCacheService.lookup(bytes)
-        assertEquals(listOf("chicken", "tomatoes", "garlic", "olive oil", "basil"), cached)
+        assertNotNull(cached)
+        assertEquals(first.ingredients, cached!!.ingredients)
+        assertEquals(first.recipes.map { it.id }, cached.recipes.map { it.id })
+        assertEquals(first.explanation, cached.explanation)
     }
 
     @Test
-    fun `second scan of same image hits L1 cache`() {
+    fun `second scan of same image hits L1 and skips embedding`() {
         val bytes = uniqueBytes(11)
-        scanService.scan(bytes, "image/jpeg", 5)
+        val first = scanService.scan(bytes, "image/jpeg", 5)
         val second = scanService.scan(bytes, "image/jpeg", 5)
         assertTrue(second.cached)
-        assertTrue(second.cacheLevel == "L1" || second.cacheLevel == "L1+L2")
+        assertEquals("L1", second.cacheLevel)
+        // Full short-circuit: stored response is returned verbatim (minus cache flags)
+        assertEquals(first.ingredients, second.ingredients)
+        assertEquals(first.recipes.map { it.id }, second.recipes.map { it.id })
+        assertEquals(first.explanation, second.explanation)
     }
 
     @Test
@@ -80,27 +88,29 @@ class ScanServiceTest {
     }
 
     @Test
-    fun `same image twice produces L1 plus L2 hit`() {
-        val bytes = uniqueBytes(20)
-        scanService.scan(bytes, "image/jpeg", 5)
-        val second = scanService.scan(bytes, "image/jpeg", 5)
-        assertTrue(second.cached)
-        assertEquals("L1+L2", second.cacheLevel)
-    }
-
-    @Test
     fun `different image with same ingredients produces L2-only hit`() {
         scanService.scan(uniqueBytes(30), "image/jpeg", 5)
-        // Clear L1 only (simulated by using different bytes) while L2 survives.
-        // MockGeminiService returns identical ingredients regardless of input bytes.
+        // MockGeminiService returns identical ingredients regardless of input bytes,
+        // so a different image hash forces L1 miss while L2 still matches on the embedding.
         val second = scanService.scan(uniqueBytes(31), "image/jpeg", 5)
         assertTrue(second.cached)
         assertEquals("L2", second.cacheLevel)
     }
 
     @Test
-    fun `L1 hit but cleared L2 produces L1-only level`() {
-        val bytes = uniqueBytes(40)
+    fun `L2 hit also promotes entry into L1 for next scan of that image`() {
+        scanService.scan(uniqueBytes(40), "image/jpeg", 5)
+        // Second image hits L2 (same ingredients) but was not in L1 yet.
+        val secondBytes = uniqueBytes(41)
+        scanService.scan(secondBytes, "image/jpeg", 5)
+        // Third scan of second image must now hit L1 (L2 hit was cached to L1).
+        val third = scanService.scan(secondBytes, "image/jpeg", 5)
+        assertEquals("L1", third.cacheLevel)
+    }
+
+    @Test
+    fun `L1 hit returns when L2 is cleared`() {
+        val bytes = uniqueBytes(50)
         scanService.scan(bytes, "image/jpeg", 5)
         // Clear only L2 (semantic cache). L1 entry for this image hash stays.
         redisCacheRepository.clear()

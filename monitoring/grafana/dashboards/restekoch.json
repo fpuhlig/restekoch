@@ -260,8 +260,14 @@
           "range": false
         },
         {
-          "expr": "restekoch_scan_total_seconds_sum{cache=\"hit\"} / clamp_min(restekoch_scan_total_seconds_count{cache=\"hit\"}, 1)",
-          "legendFormat": "Cache Hit (RAG skipped)",
+          "expr": "restekoch_scan_total_seconds_sum{cache=\"L1\"} / clamp_min(restekoch_scan_total_seconds_count{cache=\"L1\"}, 1)",
+          "legendFormat": "L1 Hit (full short-circuit)",
+          "instant": true,
+          "range": false
+        },
+        {
+          "expr": "restekoch_scan_total_seconds_sum{cache=\"L2\"} / clamp_min(restekoch_scan_total_seconds_count{cache=\"L2\"}, 1)",
+          "legendFormat": "L2 Hit (semantic cache)",
           "instant": true,
           "range": false
         }

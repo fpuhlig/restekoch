@@ -1,10 +1,14 @@
 package com.restekoch.cache
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.restekoch.recipe.Recipe
+import com.restekoch.scan.ScanResponse
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -15,7 +19,7 @@ class ImageCacheServiceTest {
     private lateinit var service: ImageCacheService
     private lateinit var meterRegistry: SimpleMeterRegistry
     private lateinit var repo: StubImageCacheRepository
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: ObjectMapper = ObjectMapper().registerKotlinModule()
 
     @BeforeEach
     fun setUp() {
@@ -74,29 +78,80 @@ class ImageCacheServiceTest {
     }
 
     @Test
-    fun `lookup returns ingredients on cache hit`() {
+    fun `lookup returns full scan response on cache hit`() {
         service = newService()
         val bytes = byteArrayOf(1, 2, 3)
         val key = service.keyFor(service.hash(bytes))
-        repo.storage[key] = """["egg","milk","flour"]"""
+        val stored =
+            ScanResponse(
+                ingredients = listOf("egg", "milk", "flour"),
+                recipes = listOf(Recipe(id = "42", title = "Pancakes")),
+                explanation = "Classic pancakes with your fridge basics.",
+                cached = false,
+                cacheLevel = null,
+            )
+        repo.storage[key] = objectMapper.writeValueAsString(stored)
         val result = service.lookup(bytes)
-        assertEquals(listOf("egg", "milk", "flour"), result)
+        assertNotNull(result)
+        assertEquals(listOf("egg", "milk", "flour"), result!!.ingredients)
+        assertEquals("Pancakes", result.recipes[0].title)
+        assertEquals("Classic pancakes with your fridge basics.", result.explanation)
         assertEquals(1.0, meterRegistry.counter("restekoch.image_cache.hits").count())
     }
 
     @Test
-    fun `store saves ingredients under hashed key`() {
+    fun `lookup treats corrupted json as miss`() {
         service = newService()
         val bytes = byteArrayOf(1, 2, 3)
-        service.store(bytes, listOf("apple", "pear"))
         val key = service.keyFor(service.hash(bytes))
-        assertEquals("""["apple","pear"]""", repo.storage[key])
+        repo.storage[key] = "not valid json"
+        val result = service.lookup(bytes)
+        assertNull(result)
+        assertEquals(1.0, meterRegistry.counter("restekoch.image_cache.misses").count())
     }
 
     @Test
-    fun `store skips empty ingredients list`() {
+    fun `lookup treats legacy ingredient-only entry as miss`() {
+        // ADR 012 format: stored only a List<String> of ingredients
         service = newService()
-        service.store(byteArrayOf(1, 2, 3), emptyList())
+        val bytes = byteArrayOf(1, 2, 3)
+        val key = service.keyFor(service.hash(bytes))
+        repo.storage[key] = """["apple","pear"]"""
+        val result = service.lookup(bytes)
+        assertNull(result)
+        assertEquals(1.0, meterRegistry.counter("restekoch.image_cache.misses").count())
+    }
+
+    @Test
+    fun `store saves full response under hashed key`() {
+        service = newService()
+        val bytes = byteArrayOf(1, 2, 3)
+        val response =
+            ScanResponse(
+                ingredients = listOf("apple", "pear"),
+                recipes = listOf(Recipe(id = "1", title = "Fruit salad")),
+                explanation = "Easy fruit salad.",
+            )
+        service.store(bytes, response)
+        val key = service.keyFor(service.hash(bytes))
+        val raw = repo.storage[key]
+        assertNotNull(raw)
+        val roundTrip = objectMapper.readValue(raw, ScanResponse::class.java)
+        assertEquals(listOf("apple", "pear"), roundTrip.ingredients)
+        assertEquals("Fruit salad", roundTrip.recipes[0].title)
+        assertEquals("Easy fruit salad.", roundTrip.explanation)
+    }
+
+    @Test
+    fun `store skips empty ingredients`() {
+        service = newService()
+        val empty =
+            ScanResponse(
+                ingredients = emptyList(),
+                recipes = emptyList(),
+                explanation = "nothing",
+            )
+        service.store(byteArrayOf(1, 2, 3), empty)
         assertTrue(repo.storage.isEmpty())
     }
 
@@ -104,7 +159,14 @@ class ImageCacheServiceTest {
     fun `disabled cache returns null on lookup and skips store`() {
         service = newService(enabled = false)
         assertNull(service.lookup(byteArrayOf(1, 2, 3)))
-        service.store(byteArrayOf(1, 2, 3), listOf("egg"))
+        service.store(
+            byteArrayOf(1, 2, 3),
+            ScanResponse(
+                ingredients = listOf("egg"),
+                recipes = emptyList(),
+                explanation = "none",
+            ),
+        )
         assertTrue(repo.storage.isEmpty())
         assertEquals(0.0, meterRegistry.counter("restekoch.image_cache.misses").count())
     }

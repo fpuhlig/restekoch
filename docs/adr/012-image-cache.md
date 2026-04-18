@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted. Storage format superseded by ADR 013 (L1 now stores the full scan response, not only ingredients). The rest of this document (key structure, TTL, SHA-256 hashing, model-scoped key) remains valid.
 
 ## Context
 

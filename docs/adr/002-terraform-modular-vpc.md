@@ -1,6 +1,6 @@
 # ADR 002: Modular Terraform with Custom VPC
 
-Status: accepted
+Status: accepted (2025-04-24 note: the `artifact-registry` module mentioned below was never implemented; see ADR 004 for the GHCR decision that superseded it. Current modules are `networking`, `vm`, `memorystore`, `firestore`.)
 
 ## Context
 

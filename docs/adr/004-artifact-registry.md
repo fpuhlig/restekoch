@@ -1,6 +1,6 @@
 # ADR 004: GHCR as Primary Container Registry
 
-Status: accepted (updated, was Artifact Registry only)
+Status: accepted (2025-04-24 update: Artifact Registry Terraform module has since been removed entirely; GHCR is the sole registry. Body below retained as historical record; see terraform/README.md and terraform/modules/ for current state.)
 
 ## Context
 

@@ -12,7 +12,7 @@ Two rounds of runs are documented:
 
 ## Methodology
 
-- Load generator and application run on the same VM (e2-small,
+- Load generator and application run on the same VM (e2-medium,
   2 vCPU, 4 GB RAM). k6 container CPU-limited to 0.5 vCPU.
 - Gateway rate limit whitelists localhost, so requests bypass the
   10 r/m per-IP limit on `/api/scan`.
@@ -30,7 +30,7 @@ Two rounds of runs are documented:
 
 | Item | Value |
 |---|---|
-| VM | e2-small (GCP Compute Engine) |
+| VM | e2-medium (GCP Compute Engine) |
 | Region | europe-west1 |
 | Backend | Quarkus 3.x on OpenJDK 21 |
 | Redis | Memorystore Basic 1 GB |

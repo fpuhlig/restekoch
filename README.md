@@ -51,7 +51,7 @@ GCP Services
 Monitoring
   +-- Node Exporter (port 9100) -> system metrics (CPU, memory, disk, network)
   +-- Prometheus (port 9090)    -> scrapes /q/metrics + Node Exporter
-  +-- Grafana (port 3000)       -> 20-panel dashboard (RED + USE + semantic cache + image cache)
+  +-- Grafana (port 3000)       -> 23-panel dashboard in 6 rows (Overview, Semantic Cache, Image Cache L1, RED, Backend APIs, USE)
 ```
 
 Every response includes an `X-Request-Id` header for log correlation.
@@ -121,6 +121,11 @@ cd terraform && terraform destroy
 | GET | /q/swagger-ui | Interactive API docs (dev profile only) |
 | GET | /q/health | Liveness and readiness checks |
 | GET | /q/metrics | Prometheus metrics |
+
+## Report / Ausarbeitung
+
+Die Ausarbeitung liegt als LaTeX-PDF unter `/workspace/abgabe/main.pdf` (externes Verzeichnis in dieser Entwicklungsumgebung).
+Sie erläutert im Detail alle XaaS-Entscheidungen, die Infrastruktur sowie die Architektur des "Semantic Cache" Fokus-Features und verifiziert dieses mithilfe der mit `k6` erhobenen Load-Tests.
 
 ## Load Testing
 

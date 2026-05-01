@@ -1,6 +1,8 @@
 # ADR 004: GHCR as Primary Container Registry
 
-Status: accepted (2025-04-24 update: Artifact Registry Terraform module has since been removed entirely; GHCR is the sole registry. Body below retained as historical record; see terraform/README.md and terraform/modules/ for current state.)
+## Status
+
+Accepted, then superseded in part by [ADR 014](014-ghcr-sole-registry.md) (2026-04-24): the Artifact Registry Terraform module was later removed entirely. The decision below is preserved as the original April 2026 reasoning.
 
 ## Context
 
@@ -18,7 +20,7 @@ Artifact Registry stays in Terraform as a provisioned resource. It demonstrates 
 
 GHCR is free for public repos. The CI pushes with the built-in GITHUB_TOKEN. No extra secrets, no service account keys, no gcloud on the VM.
 
-The professor can pull the images without a GCP account: `docker pull ghcr.io/fpuhlig/restekoch/backend:latest`. That lowers the bar for them to test the project.
+The professor can pull the images without a GCP account: `docker pull ghcr.io/<owner>/restekoch-backend:latest` (the exact owner string is the GitHub repository owner that hosts this fork). That lowers the bar for them to test the project.
 
 The project already has Firestore and Memorystore as PaaS services. Artifact Registry does not add to the PaaS score. Keeping it in Terraform shows we can provision it, but there is no reason to route all Docker traffic through it.
 

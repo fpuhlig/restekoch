@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted
+Accepted (April 2026), with a verification note added on 2026-04-30 — see *Verification note* below.
+
+> **Verification note (2026-04-30):** During an audit pass before submission, parts of the model survey under *Decision &rarr; Model* could not be substantiated against primary sources. Specifically, the comparative claims about "Gemini 3.1 Pro", "Gemini 3.1 Flash" and "Gemini 3 Flash" (preview status, percentage advantages, the CalCam reference, and the Arxiv accuracy figure) lack citations and may not match the actual Vertex AI model lineup at the time of writing. The substantive choice for `gemini-2.5-flash` rests on (a) its GA status, (b) its lower price per token compared to the corresponding Pro variant in the same family, and (c) the existing Vertex AI integration. Those three points carry the decision; the wider model survey is retained below as the original draft argument and should be read with this caveat.
 
 ## Context
 

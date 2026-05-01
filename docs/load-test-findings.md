@@ -56,8 +56,10 @@ no Gemini. Full short-circuit. Documented in ADR 013. Expected p50 drop
 from ~650 ms to under 100 ms, to be verified by re-running k6
 Scenario 1 after deploy.
 
-**Verification (pending):** Re-run k6 Scenario 1 on GCP, update
-`docs/load-test-results.md` with before/after numbers.
+**Verification (done, 2026-04-18):** Re-ran k6 Scenario 1 on GCP after
+deploying ADR 013. L1-hit p50 dropped from 637 ms to 20.4 ms, p95 from
+751 ms to 31.7 ms (factor ~31 on p50, ~24 on p95). L1 hit rate at
+99 % across 100 scans. Numbers updated in `docs/load-test-results.md`.
 
 ### LTF-002: Scenario 1 throughput 1.17 req/s
 

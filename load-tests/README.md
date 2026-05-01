@@ -12,10 +12,14 @@ show up on the Grafana dashboard in real time.
 | 1 | `01-image-cache-l1.js` | Image cache L1 hit rate with repeated uploads of fridge1.jpg | 100 | 1 |
 | 2 | `02-search-throughput.js` | `/api/search` throughput with 25 different ingredient lists | 50 | 0 |
 | 3 | `03-recipes-baseline.js` | `/api/recipes` paginated read baseline | 500 | 0 |
-| 4 | `04-scan-stress.js` | 10 concurrent VUs with 10 different images, ramped | ~50-100 | ~10 |
+| 4 | `04-scan-stress.js` | 10 concurrent VUs with 10 different images, ramped (30 s ramp-up + 60 s steady) | depends on latency, ~3700 measured after ADR 013 | ~13 |
 
-Total Gemini cost per full run: ~USD 0.03 (Gemini Flash 2.5 Vision at
-about USD 0.003 per image).
+Total Gemini cost per single clean run: ~USD 0.04 (Gemini Flash 2.5
+Vision at about USD 0.003 per image; Scenarios 1+2 contribute 1
+Gemini Vision call each, Scenario 3 none, Scenario 4 about 13). The
+documented pilot plus re-run series in `docs/load-test-results.md`
+totals ~USD 0.09 because Scenario 4 was executed twice (before and
+after ADR 013).
 
 ## Prerequisites
 
@@ -76,14 +80,16 @@ must be calibrated from a pilot run. Process:
    observed p95 plus 20% headroom.
 3. Commit the updated thresholds.
 4. Run again. This is the official run. Summary goes into
-   `docs/load-test-results.md`, screenshots go into `docs/images/`.
+   `docs/load-test-results.md`. Grafana screenshots from the run are
+   not checked into the repository.
 
 ## Results artifacts
 
 - `docs/load-test-results.md`: human-readable summary per scenario with
   p50/p95/p99, throughput, error rate, observations, git SHA.
-- `docs/images/load-test-{scenario}-{metric}.png`: Grafana screenshots
-  captured during each run.
+- Grafana screenshots from the run remain in the live dashboard and are
+  reproduced in the project report (`/workspace/abgabe/`); they are not
+  committed to this repository.
 - k6 JSON output is not checked in. Prometheus is the source of truth
   for time-series data.
 

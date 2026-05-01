@@ -1,4 +1,4 @@
-# 013: L1 Image Cache Stores Full Scan Response
+# ADR 013: L1 Image Cache Stores Full Scan Response
 
 ## Status
 

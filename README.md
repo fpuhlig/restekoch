@@ -146,7 +146,7 @@ Key measured numbers (after ADR 013, 2026-04-18):
 
 - L1 hit p50: 20 ms, p95: 32 ms
 - Full pipeline (first scan): 11.7 s
-- Speedup on repeat scan: ~580x
+- Speedup on repeat scan: ~9-10x median, ~580x worst case (see `docs/load-test-results.md` for the methodology)
 - Under 10 VU concurrency: 37 req/s throughput, 99.22% L1 hit rate
 
 ## Frontend
@@ -173,6 +173,20 @@ cd frontend && pnpm install && pnpm dev
 cd frontend && pnpm test
 ```
 
+## Quality and CI
+
+GitHub Actions runs seven jobs on every push and pull request:
+
+1. Backend unit + integration tests (99 JUnit tests, Quarkus + Testcontainers)
+2. Backend static analysis (ktlint, detekt)
+3. Frontend tests (57 Vitest + React Testing Library)
+4. Frontend lint (eslint, prettier)
+5. Terraform fmt + validate (all modules)
+6. Ansible lint (FQCN modules enforced)
+7. Docker build and push to GHCR (`restekoch-backend`, `restekoch-frontend`, `restekoch-gateway`)
+
+Local development uses `lefthook` to run the same checks pre-commit. Container images on GHCR are public, no GCP authentication required for `docker pull`.
+
 ## Project Structure
 
 ```
@@ -181,6 +195,6 @@ frontend/      React + Vite (photo upload, recipe display, cache badges)
 terraform/     GCP infrastructure (VPC, VM, Redis, Firestore)
 ansible/       Deployment automation (Docker, app containers)
 monitoring/    Prometheus config, Grafana dashboards and provisioning
-scripts/       Helper scripts (image push, vault update, recipe filter)
+scripts/       Helper scripts (vault update, recipe seeding, recipe filter)
 docs/adr/      Architecture Decision Records
 ```

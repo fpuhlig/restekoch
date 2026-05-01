@@ -1,6 +1,8 @@
 # ADR 007: Backend Architecture
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 
@@ -23,17 +25,17 @@ The service layer exists from the start even when it just forwards to the reposi
 ```
 com.restekoch/
   StatusResource.kt
-  recipe/
-    Recipe.kt
-    RecipeRepository.kt
-    RecipeService.kt
-    RecipeResource.kt
-  scan/        (coming)
-  search/      (coming)
-  cache/       (coming)
+  config/      (request-id filter, exception mapper, error response)
+  recipe/      (Recipe data class, RecipeRepository, RecipeService, RecipeResource)
+  scan/        (ScanResource, ScanService, ScanResponse)
+  search/      (SearchResource, SearchService, RedisVectorRepository)
+  cache/       (CacheResource, CacheStats, ImageCache* and SemanticCache* services + repositories)
+  embedding/   (EmbeddingService interface, MockEmbeddingService, VertexEmbeddingService)
+  gemini/      (GeminiService interface, MockGeminiService, VertexGeminiService)
+  indexer/     (IndexResource, RecipeIndexer)
 ```
 
-Features are grouped by domain (recipe, scan, search), not by layer. This keeps related code together and each package self-contained.
+Features are grouped by domain (recipe, scan, search, cache, embedding, gemini, indexer), not by layer. This keeps related code together and each package self-contained.
 
 ## Why not full MVC
 

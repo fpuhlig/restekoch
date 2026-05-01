@@ -1,6 +1,8 @@
 # ADR 001: Recipe Data Source
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 

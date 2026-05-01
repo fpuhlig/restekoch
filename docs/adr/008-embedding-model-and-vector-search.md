@@ -1,6 +1,8 @@
 # ADR 008: Embedding Model and Vector Search Architecture
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 

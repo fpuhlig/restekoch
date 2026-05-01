@@ -94,8 +94,11 @@ L1 hit still triggered a Vertex AI embedding call for the L2 lookup
 | p95 | 750 ms | 31.7 ms | **24x faster** |
 | Throughput | 1.17 iter/s | 4.10 iter/s | **3.5x higher** |
 
-Full-pipeline vs L1 hit: 11.7 s vs 20.4 ms = **~580x speedup** on
-repeat uploads.
+Speedup methodology:
+- **Worst case (max pipeline vs L1 median)**: 11.7 s ÷ 20.4 ms ≈ **~580x**. This is the user-facing perceived speedup between a cold first scan and a subsequent L1-cached repeat scan. It compares maximum against median by design; that is why the project report uses it only as a worst-case bracket, not as the headline figure.
+- **Median against median (across scenarios)**: roughly **9 to 10x**. The exact derivation is in the project report (`/workspace/abgabe/`, Section 4.2); briefly, it compares the median scan duration of the mixed-load scenarios against the L1-cache median.
+
+The median ratio is the statistically robust number; the 580x figure stays in this document as the upper bound that motivated the focus feature.
 
 **Observations:**
 - L1 hit is now a pure Redis GET plus JSON deserialization. No Vertex
@@ -226,8 +229,10 @@ Estimated cost: **~0.09 USD** over both runs. Remaining GCP budget
   uploads of the same image. After ADR 013, L1 hit is a pure Redis GET
   plus JSON deserialize (p50 20 ms). First request runs the full
   pipeline, every repeat avoids all external SaaS.
-- **Full pipeline vs L1 hit: ~580x speedup.** 11.7 s (first scan) to
-  20 ms (L1 hit). The focus feature of this project.
+- **Full pipeline vs L1 hit: ~580x worst case, 9-10x median.** 11.7 s
+  (first scan) to 20 ms (L1 hit) gives the worst-case bracket; the
+  median-vs-median ratio across scenarios is roughly 9-10x. The focus
+  feature of this project.
 - **Concurrency scales.** Under 10 VU, throughput triples from 12 rps
   to 37 rps after ADR 013. 99.22% hit rate holds. Bottleneck shifts
   to upload bandwidth (17 MB/s sustained) instead of server logic.

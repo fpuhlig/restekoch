@@ -1,6 +1,8 @@
 # ADR 005: Ansible with Static Inventory
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 

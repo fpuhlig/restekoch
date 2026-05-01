@@ -43,7 +43,7 @@ See docs/adr/004-artifact-registry.md for why.
 
 ## Modules
 
-- **networking**: VPC, subnet, firewall rules (SSH on 22, HTTP on 80/8080/3000/9090)
+- **networking**: VPC, subnet, firewall rules (SSH on 22 from configurable CIDR, HTTP on 80, Grafana on 3000). Backend on 8080 and Prometheus on 9090 stay internal to the Docker network.
 - **vm**: GCE instance with static external IP, SSH access via public key
 - **memorystore**: Redis 7.2 instance connected to the VPC, used for semantic cache and vector search
 - **firestore**: Document database for recipe storage

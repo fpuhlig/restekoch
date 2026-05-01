@@ -1,6 +1,8 @@
 # ADR 006: Quarkiverse Firestore Extension
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 
@@ -22,4 +24,4 @@ With the raw SDK we would write all of that ourselves. For a project this size, 
 
 ## Trade-offs
 
-The extension is maintained by the Quarkiverse community, not by Google or Red Hat directly. If it breaks or falls behind the SDK, we would need to switch. The latest version (2.20.1) supports Firestore well and is actively maintained.
+The extension is maintained by the Quarkiverse community, not by Google or Red Hat directly. If it breaks or falls behind the SDK, we would need to switch. The version is managed by the `quarkus-google-cloud-services-bom`, currently aligned with Quarkus Platform 3.34.x via the `quarkusPlatformVersion` Gradle property; switching the platform version updates the Firestore extension automatically.

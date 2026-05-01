@@ -1,8 +1,12 @@
-# 012: Image Content Cache (L1)
+# ADR 012: Image Content Cache (L1)
 
 ## Status
 
-Accepted. Storage format superseded by ADR 013 (L1 now stores the full scan response, not only ingredients). The rest of this document (key structure, TTL, SHA-256 hashing, model-scoped key) remains valid.
+Accepted, then superseded in part by ADR 013.
+
+ADR 013 changes the L1 storage format and behavior: L1 now stores the full `ScanResponse` JSON and short-circuits the entire pipeline on hit (no embedding, no L2 lookup). The rest of this document (SHA-256 hashing, model-scoped key, TTL, metrics names, failure mode) remains valid.
+
+> **Reading guide:** Treat the *Decision* and *Limitations* sections below as the original April 2026 design that motivated the load-test in Scenario 1. The findings under *Limitations* (notably "L1 hit does not short-circuit L2") were the trigger for ADR 013 and are now resolved. See ADR 013 and `docs/load-test-results.md` for the current implementation and measurements.
 
 ## Context
 

@@ -1,6 +1,8 @@
 # ADR 003: Memorystore Redis for Cache and Vector Search
 
-Status: accepted
+## Status
+
+Accepted
 
 ## Context
 

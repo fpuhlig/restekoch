@@ -42,8 +42,7 @@ timedatectl                                 # NTP synced
 docker ps                                   # all services running
 curl -sS http://localhost/health            # gateway health
 curl -sS http://localhost/api/cache/stats | jq  # cache state snapshot
-curl -sS -X DELETE http://localhost/api/cache    # clean cache (admin, localhost whitelisted)
-curl -sS http://localhost/api/cache/init -X POST # recreate indexes
+curl -sS -X DELETE http://localhost/api/cache    # clean both cache levels (admin, localhost whitelisted)
 ```
 
 ## Running a scenario

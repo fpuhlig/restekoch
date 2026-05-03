@@ -20,7 +20,7 @@ We create our own VPC instead of using the default network that comes with every
 
 ## Current state
 
-Four modules in `terraform/modules/`: `networking`, `vm`, `memorystore`, `firestore`. Open ports on the VM: 22 (SSH from a configurable CIDR), 80 (Gateway), 3000 (Grafana with password). Backend port 8080 and Prometheus 9090 are not exposed externally; the gateway proxies the application, and Prometheus is only reachable from Grafana inside the Docker network.
+Four modules in `terraform/modules/`: `networking`, `vm`, `memorystore`, `firestore`. Open ports on the VM: 22 (SSH from a configurable CIDR), 80 (Gateway), 3000 (Grafana with password). Backend port 8080 is not exposed externally. Prometheus (9090) and Node Exporter (9100) are published on the Docker host but blocked externally by the GCP firewall.
 
 ## Why
 

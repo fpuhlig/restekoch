@@ -15,8 +15,8 @@ show up on the Grafana dashboard in real time.
 | 4 | `04-scan-stress.js` | 10 concurrent VUs with 10 different images, ramped (30 s ramp-up + 60 s steady) | depends on latency, ~3700 measured after ADR 013 | ~13 |
 
 Total Gemini cost per single clean run: ~USD 0.04 (Gemini Flash 2.5
-Vision at about USD 0.003 per image; Scenarios 1+2 contribute 1
-Gemini Vision call each, Scenario 3 none, Scenario 4 about 13). The
+Vision at about USD 0.003 per image; Scenario 1 contributes 1 Gemini Vision call, Scenario 2 contributes 1 Embedding call
+(no Gemini), Scenario 3 none, Scenario 4 about 13). The
 documented pilot plus re-run series in `docs/load-test-results.md`
 totals ~USD 0.09 because Scenario 4 was executed twice (before and
 after ADR 013).

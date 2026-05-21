@@ -1,200 +1,58 @@
 # Restekoch
 
-Scan your fridge, get recipe ideas.
+[![CI](https://github.com/fpuhlig/restekoch/actions/workflows/ci.yml/badge.svg)](https://github.com/fpuhlig/restekoch/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Upload a photo of your ingredients. The app identifies them and suggests matching recipes using RAG and semantic caching.
+Scan your fridge, get recipe ideas. Photo in, recipes out.
 
-## Architecture
+Upload a photo of ingredients. Gemini Vision identifies them, a vector search over 2000 indexed recipes returns the best matches, and a two-tier cache short-circuits repeated and similar requests.
 
-```
-Client (Browser)
-  |
-  v
-Gateway (nginx, port 80)
-  |  rate limiting on /api/scan (10 req/min per IP)
-  |  admin restriction on /api/index and /api/cache (internal only)
-  |  security headers (X-Content-Type-Options, X-Frame-Options, Referrer-Policy)
-  |
-  +-- /           -> Frontend (static files)
-  +-- /api/*      -> Backend
-  +-- /health     -> 200 ok (gateway health)
-  |
-  v
-Frontend (React + Vite)
-  |  photo upload, ingredient display, recipe cards
-  v
-Backend (Kotlin + Quarkus, port 8080)
-  |-- /api/status       -> health check
-  |-- /api/recipes      -> CRUD (list, get by ID, create)
-  |-- /api/search       -> semantic search by ingredients (vector KNN)
-  |-- /api/index        -> index recipes into Redis
-  |-- /api/scan         -> fridge photo scan + RAG recipe suggestions
-  |-- /q/openapi        -> OpenAPI 3.1 spec
-  |-- /q/swagger-ui     -> interactive API docs (dev only)
-  |-- /q/health         -> health checks
-  |-- /q/metrics        -> Prometheus metrics
-  |
-  +-- RecipeService -> RecipeRepository -> Firestore
-  +-- SearchService -> RedisVectorRepository -> Memorystore Redis
-  +-- EmbeddingService -> Vertex AI text-embedding-004
-  +-- ScanService      -> ImageCacheService (L1 full-response short-circuit) -> GeminiService -> SemanticCacheService (L2) -> SearchService
-  +-- GeminiService    -> Vertex AI Gemini 2.5 Flash (vision + text)
-  +-- ImageCacheService    -> ImageCacheRepository -> Memorystore Redis (img:{model}:{sha256})
-  +-- SemanticCacheService -> RedisCacheRepository -> Memorystore Redis (idx:cache)
-  |
-  v
-GCP Services
-  +-- Firestore (recipe storage, 2000 recipes)
-  +-- Memorystore Redis 7.2 (HNSW vector index, KNN search)
-  +-- Vertex AI (Gemini 2.5 Flash vision+text, text-embedding-004 768d)
+![Architecture](docs/images/architecture.png)
 
-Monitoring
-  +-- Node Exporter (port 9100) -> system metrics (CPU, memory, disk, network)
-  +-- Prometheus (port 9090)    -> scrapes /q/metrics + Node Exporter
-  +-- Grafana (port 3000)       -> 23-panel dashboard in 6 rows (Overview, Semantic Cache, Image Cache L1, RED, Backend APIs, USE)
-```
+## Stack
 
-Every response includes an `X-Request-Id` header for log correlation.
-Error responses return structured JSON (`message`, `requestId`, `timestamp`), never stack traces.
+Kotlin + Quarkus, React + Vite, Nginx, Redis (HNSW), Firestore, Vertex AI (Gemini 2.5 Flash, text-embedding-004), Terraform, Ansible, Prometheus, Grafana.
 
-## Quick Start (local)
+## Run locally
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-Backend: http://localhost:8080/api/status
-Frontend: http://localhost:3000
+App on http://localhost. Without GCP credentials the backend uses mocks for Gemini and embeddings (CDI `@DefaultBean`).
 
-## Seed Recipes
-
-Load 2000 recipes into Firestore. Requires `google-cloud-firestore` Python package.
+## Deploy
 
 ```bash
-pip install google-cloud-firestore
+cd terraform && terraform apply
+cd .. && ./scripts/update-vault.sh
+cd ansible && ansible-playbook playbook.yml
 ```
 
-Against local emulator (while `quarkus dev` is running):
+## Tests
 
 ```bash
-FIRESTORE_EMULATOR_HOST=localhost:8081 python scripts/seed_firestore.py
+cd backend && ./gradlew test            # 100 JUnit tests (Quarkus + Testcontainers)
+cd frontend && pnpm test                # 57 Vitest tests
 ```
 
-Against real GCP Firestore:
+## Load tests
 
-```bash
-gcloud auth application-default login
-python scripts/seed_firestore.py
-```
+Four k6 scenarios under `load-tests/`, run from the production VM. Measured numbers in `docs/load-test-results.md`.
 
-The script uses deterministic document IDs. Running it twice overwrites instead of duplicating.
-
-## Deploy to GCP
-
-```bash
-cd terraform && terraform apply          # provision infrastructure
-cd .. && ./scripts/update-vault.sh       # update ansible vault with new IPs
-cd ansible && ansible-playbook playbook.yml  # deploy containers
-```
-
-Tear down after each session:
-
-```bash
-cd terraform && terraform destroy
-```
-
-## API
-
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /api/status | Health check |
-| GET | /api/recipes | List recipes (query: limit, offset) |
-| GET | /api/recipes/{id} | Get recipe by ID |
-| POST | /api/recipes | Create a recipe |
-| POST | /api/scan | Upload fridge photo, get recipe suggestions (multipart image) |
-| GET | /api/search | Semantic recipe search (query: ingredients, limit) |
-| POST | /api/index | Index all recipes into Redis (batch embed + HSET), clears cache |
-| GET | /api/cache/stats | Cache statistics for both layers (semantic L2 and image L1) |
-| DELETE | /api/cache | Clear both semantic and image caches |
-| POST | /api/cache/init | Initialize both cache indexes |
-| GET | /q/openapi | OpenAPI 3.1 specification |
-| GET | /q/swagger-ui | Interactive API docs (dev profile only) |
-| GET | /q/health | Liveness and readiness checks |
-| GET | /q/metrics | Prometheus metrics |
-
-## Report / Ausarbeitung
-
-Die Ausarbeitung liegt als LaTeX-PDF unter `/workspace/abgabe/main.pdf` (externes Verzeichnis in dieser Entwicklungsumgebung).
-Sie erläutert im Detail alle XaaS-Entscheidungen, die Infrastruktur sowie die Architektur des "Semantic Cache" Fokus-Features und verifiziert dieses mithilfe der mit `k6` erhobenen Load-Tests.
-
-## Load Testing
-
-Four k6 scenarios live under `load-tests/`, designed to run from inside
-the production VM (localhost is whitelisted by the gateway rate limit).
-Results stream into Prometheus via remote write and surface on the
-Grafana dashboard during each run.
-
-- Scenario 1: image cache L1 hit rate (100 scans of the same image)
-- Scenario 2: search throughput (50 requests, 25 ingredient lists)
-- Scenario 3: recipes baseline (500 paginated Firestore reads)
-- Scenario 4: scan stress (10 concurrent VUs, 10 different images)
-
-See `load-tests/README.md` for the exact run procedure and
-`docs/load-test-results.md` for measured numbers and observations.
-
-Key measured numbers (after ADR 013, 2026-04-18):
-
-- L1 hit p50: 20 ms, p95: 32 ms
-- Full pipeline (first scan): 11.7 s
-- Speedup on repeat scan: ~9-10x median, ~580x worst case (see `docs/load-test-results.md` for the methodology)
-- Under 10 VU concurrency: 37 req/s throughput, 99.22% L1 hit rate
-
-## Frontend
-
-Single page app built with React and plain CSS (no component library). Warm Kitchen color theme.
-
-Features:
-- Drag and drop or camera photo upload
-- Ingredient detection display as tags
-- Recipe suggestion cards with ingredient match highlighting
-- Cache hit/miss badge on each recipe card
-- Scan duration display (demonstrates cache speed difference)
-- Error handling with dismissable messages
-
-Local development with Vite proxy (no CORS needed):
-
-```bash
-cd frontend && pnpm install && pnpm dev
-```
-
-57 tests with Vitest and React Testing Library:
-
-```bash
-cd frontend && pnpm test
-```
-
-## Quality and CI
-
-GitHub Actions runs seven jobs on every push and pull request:
-
-1. Backend unit + integration tests (99 JUnit tests, Quarkus + Testcontainers)
-2. Backend static analysis (ktlint, detekt)
-3. Frontend tests (57 Vitest + React Testing Library)
-4. Frontend lint (eslint, prettier)
-5. Terraform fmt + validate (all modules)
-6. Ansible lint (FQCN modules enforced)
-7. Docker build and push to GHCR (`restekoch-backend`, `restekoch-frontend`, `restekoch-gateway`)
-
-Local development uses `lefthook` to run the same checks pre-commit. Container images on GHCR are public, no GCP authentication required for `docker pull`.
-
-## Project Structure
+## Layout
 
 ```
-backend/       Kotlin + Quarkus REST API
-frontend/      React + Vite (photo upload, recipe display, cache badges)
-terraform/     GCP infrastructure (VPC, VM, Redis, Firestore)
-ansible/       Deployment automation (Docker, app containers)
-monitoring/    Prometheus config, Grafana dashboards and provisioning
-scripts/       Helper scripts (vault update, recipe seeding, recipe filter)
-docs/adr/      Architecture Decision Records
+backend/     Kotlin + Quarkus
+frontend/    React + Vite
+gateway/     Nginx (routing, rate limit, security headers)
+terraform/   GCP infrastructure
+ansible/     Deployment
+monitoring/  Prometheus + Grafana
+load-tests/  k6 scenarios
+docs/adr/    Architecture decisions
 ```
+
+## License
+
+MIT
